@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>30 DAYS OF GAINS</title>
+  
+  <!-- Web App Manifest for PWA & APK Builder -->
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIjMwIERBWVMgT0YgR0FJTlMiLAogICJzaG9ydF9uYW1lIjogIjMwR0FJTlMiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxODE4MTgiLAogICJ0aGVtZV9jb2xvciI6ICIjRkY2NjAwIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4tanNkZWxpdnIubmV0L2doL3R3aXR0ZXIvdHdlbW9qaUBsYXRlc3QvYXAssetsLzcyeDcyLzExMDg4LnBuZyIsCiAgICAgICJzaXplcyI6ICI3Mng3MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+  <meta name="theme-color" content="#FF6600">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background-color: #181818; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .bg-card { background-color: #262626; }
+    .accent-orange { color: #FF6600; }
+    .bg-accent-orange { background-color: #FF6600; }
+    .border-accent-orange { border-color: #FF6600; }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="p-4 bg-card border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-full bg-accent-orange flex items-center justify-center font-black text-black">30</div>
+      <div>
+        <h1 class="font-extrabold text-lg leading-none tracking-tight">30 DAYS OF GAINS</h1>
+        <p class="text-xs text-zinc-400" id="user-status">Guest Account</p>
+      </div>
+    </div>
+    <button onclick="switchScreen('settings')" class="p-2 text-zinc-400 hover:text-white">
+      <i data-lucide="settings"></i>
+    </button>
+  </header>
+
+  <!-- Login Screen -->
+  <section id="screen-auth" class="p-6 max-w-md mx-auto my-8 bg-card rounded-2xl border border-zinc-800 space-y-6">
+    <div class="text-center space-y-2">
+      <h2 class="text-2xl font-black">WELCOME BACK</h2>
+      <p class="text-sm text-zinc-400">Sign in to sync your 30-day gains across all devices</p>
+    </div>
+    <div class="space-y-3">
+      <button onclick="login('google')" class="w-full py-3 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 hover:bg-zinc-200">
+        <i data-lucide="chrome" class="w-5 h-5"></i>
+        <span>Continue with Google</span>
+      </button>
+      <button onclick="login('apple')" class="w-full py-3 bg-zinc-900 text-white font-bold rounded-xl flex items-center justify-center space-x-3 border border-zinc-700 hover:bg-zinc-800">
+        <i data-lucide="apple" class="w-5 h-5"></i>
+        <span>Continue with Apple</span>
+      </button>
+      <div class="relative flex py-2 items-center">
+        <div class="flex-grow border-t border-zinc-800"></div>
+        <span class="flex-shrink mx-4 text-xs text-zinc-500 uppercase">Or</span>
+        <div class="flex-grow border-t border-zinc-800"></div>
+      </div>
+      <button onclick="login('guest')" class="w-full py-3 bg-accent-orange text-black font-bold rounded-xl flex items-center justify-center space-x-2">
+        <span>Continue as Guest</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Home Hub Screen -->
+  <section id="screen-home" class="p-4 max-w-md mx-auto space-y-6 hidden">
+    <!-- Quick Progress Banner -->
+    <div class="bg-card p-5 rounded-2xl border border-zinc-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-bold text-accent-orange uppercase tracking-wider">Overall Progress</span>
+        <h3 class="text-2xl font-black" id="home-progress-text">0 / 30 DAYS</h3>
+        <p class="text-xs text-zinc-400 mt-1" id="home-streak-text">Current Streak: 0 Days 🔥</p>
+      </div>
+      <div class="w-16 h-16 rounded-full border-4 border-accent-orange flex items-center justify-center font-bold text-lg" id="home-progress-percent">
+        0%
+      </div>
+    </div>
+
+    <!-- Navigation Paths -->
+    <div class="space-y-3">
+      <button onclick="switchScreen('today')" class="w-full p-5 bg-card hover:bg-zinc-800 rounded-2xl border-2 border-accent-orange text-left flex items-center justify-between">
+        <div>
+          <span class="bg-accent-orange text-black text-xs font-extrabold px-2 py-0.5 rounded">RECOMMENDED</span>
+          <h4 class="text-xl font-bold mt-2">Today's Workout</h4>
+          <p class="text-xs text-zinc-400" id="today-summary">Day 1: Push Hypertrophy</p>
+        </div>
+        <i data-lucide="dumbbell" class="accent-orange w-8 h-8"></i>
+      </button>
+
+      <button onclick="switchScreen('program')" class="w-full p-4 bg-card hover:bg-zinc-800 rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+        <div>
+          <h4 class="text-lg font-bold">30-Day Program Grid</h4>
+          <p class="text-xs text-zinc-400">View and select any day of the plan</p>
+        </div>
+        <i data-lucide="calendar" class="w-6 h-6 text-zinc-400"></i>
+      </button>
+
+      <button onclick="switchScreen('stats')" class="w-full p-4 bg-card hover:bg-zinc-800 rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+        <div>
+          <h4 class="text-lg font-bold">Gains & Stats</h4>
+          <p class="text-xs text-zinc-400">Total volume lifted, workouts, and history</p>
+        </div>
+        <i data-lucide="activity" class="w-6 h-6 text-zinc-400"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Today's Workout Screen -->
+  <section id="screen-today" class="p-4 max-w-md mx-auto space-y-4 hidden">
+    <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-2">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      <span>BACK TO HOME HUB</span>
+    </button>
+    
+    <div class="bg-card p-4 rounded-xl border border-zinc-800 flex justify-between items-center">
+      <div>
+        <h2 class="text-xl font-black" id="workout-title">Day 1: Push Day</h2>
+        <p class="text-xs text-zinc-400">Chest, Shoulders & Triceps</p>
+      </div>
+      <button onclick="completeWorkout()" class="bg-accent-orange text-black font-extrabold px-3 py-2 rounded-lg text-xs">
+        COMPLETE WORKOUT
+      </button>
+    </div>
+
+    <div class="space-y-3" id="exercise-list">
+      <!-- Exercises populated dynamically -->
+    </div>
+  </section>
+
+  <!-- Settings View -->
+  <section id="screen-settings" class="p-4 max-w-md mx-auto space-y-4 hidden">
+    <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-2">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      <span>BACK TO HOME HUB</span>
+    </button>
+    <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-4">
+      <h2 class="text-lg font-bold">App Settings</h2>
+      <button onclick="resetData()" class="w-full py-2 bg-red-900/40 text-red-400 border border-red-800 rounded-lg text-sm font-bold">
+        Reset 30-Day Data
+      </button>
+      <button onclick="logout()" class="w-full py-2 bg-zinc-800 text-zinc-300 rounded-lg text-sm font-bold">
+        Sign Out
+      </button>
+    </div>
+  </section>
+
+  <script>
+    let user = JSON.parse(localStorage.getItem('user')) || null;
+    let completedDays = JSON.parse(localStorage.getItem('completedDays')) || [];
+
+    function init() {
+      lucide.createIcons();
+      if (!user) {
+        switchScreen('auth');
+      } else {
+        document.getElementById('user-status').innerText = user.name || 'User Account';
+        switchScreen('home');
+      }
+      updateHomeStats();
+    }
+
+    function switchScreen(screen) {
+      const screens = ['auth', 'home', 'today', 'settings'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById(`screen-${screen}`).classList.remove('hidden');
+    }
+
+    function login(provider) {
+      user = {
+        name: provider === 'guest' ? 'Guest Athlete' : `${provider.toUpperCase()} User`,
+        provider: provider
+      };
+      localStorage.setItem('user', JSON.stringify(user));
+      document.getElementById('user-status').innerText = user.name;
+      switchScreen('home');
+    }
+
+    function logout() {
+      localStorage.removeItem('user');
+      user = null;
+      switchScreen('auth');
+    }
+
+    function updateHomeStats() {
+      const total = completedDays.length;
+      const pct = Math.round((total / 30) * 100);
+      document.getElementById('home-progress-text').innerText = `${total} / 30 DAYS`;
+      document.getElementById('home-progress-percent').innerText = `${pct}%`;
+      document.getElementById('home-streak-text').innerText = `Current Streak: ${total} Days 🔥`;
+    }
+
+    function completeWorkout() {
+      if (!completedDays.includes(1)) {
+        completedDays.push(1);
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+      }
+      updateHomeStats();
+      alert('Workout completed! Progress saved.');
+      switchScreen('home');
+    }
+
+    function resetData() {
+      if (confirm('Are you sure you want to reset your 30-day progress?')) {
+        completedDays = [];
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+        updateHomeStats();
+        alert('Data reset.');
+      }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
