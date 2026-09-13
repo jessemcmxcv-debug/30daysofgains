@@ -1,0 +1,17 @@
+{
+  "name": "30 DAYS OF GAINS",
+  "short_name": "30 GAINS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#181818",
+  "theme_color": "#FF6600",
+  "description": "30 Day Strength Training and Gains Tracker",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1256/1256650.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
