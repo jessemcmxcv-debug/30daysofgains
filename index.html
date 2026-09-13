@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>30 DAYS OF GAINS</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF6600">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="30GAINS">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --bg: #181818;
+      --card: #262626;
+      --accent: #FF6600;
+      --accent-dark: #e55c00;
+    }
+    
+    body {
+      background-color: var(--bg);
+      color: #FFFFFF;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    
+    .bg-card { background-color: var(--card); }
+    .bg-accent { background-color: var(--accent); }
+    .text-accent { color: var(--accent); }
+    .border-accent { border-color: var(--accent); }
+    
+    .splash-logo {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .welcome-overlay {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ==================== SPLASH SCREEN ==================== -->
+  <div id="screen-splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#181818]">
+    <div class="splash-logo flex flex-col items-center">
+      <div class="w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6">
+        <span class="text-5xl font-black text-black tracking-tighter">30</span>
+      </div>
+      <h1 class="text-3xl font-black tracking-tight">30 DAYS OF GAINS</h1>
+      <p class="text-zinc-500 text-sm mt-2 tracking-widest uppercase">Build. Progress. Dominate.</p>
+    </div>
+    
+    <div class="absolute bottom-16 flex flex-col items-center">
+      <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3"></div>
+      <p class="text-zinc-600 text-xs">Loading...</p>
+    </div>
+  </div>
+
+  <!-- ==================== AUTH SCREEN ==================== -->
+  <section id="screen-auth" class="hidden min-h-screen flex flex-col">
+    <header class="p-4 bg-card border-b border-zinc-800 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm">30</div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-none">30 DAYS OF GAINS</h1>
+          <p class="text-xs text-zinc-400">Guest Account</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 flex items-center justify-center p-6">
+      <div class="w-full max-w-md bg-card rounded-2xl border border-zinc-800 p-8 space-y-6 fade-in">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl font-black">WELCOME BACK</h2>
+          <p class="text-sm text-zinc-400">Sign in to sync your 30-day gains across all devices</p>
+        </div>
+
+        <div class="space-y-3">
+          <button onclick="login('google')" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 hover:bg-zinc-100 active:scale-[0.98] transition">
+            <i data-lucide="chrome" class="w-5 h-5"></i>
+            <span>Continue with Google</span>
+          </button>
+          
+          <button onclick="login('apple')" class="w-full py-3.5 bg-zinc-900 text-white font-bold rounded-xl flex items-center justify-center space-x-3 border border-zinc-700 hover:bg-zinc-800 active:scale-[0.98] transition">
+            <i data-lucide="apple" class="w-5 h-5"></i>
+            <span>Continue with Apple</span>
+          </button>
+
+          <div class="relative flex py-3 items-center">
+            <div class="flex-grow border-t border-zinc-800"></div>
+            <span class="flex-shrink mx-4 text-xs text-zinc-500 uppercase tracking-wider">Or</span>
+            <div class="flex-grow border-t border-zinc-800"></div>
+          </div>
+
+          <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2 hover:bg-[#e55c00] active:scale-[0.98] transition">
+            <span>Continue as Guest</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== WELCOME OVERLAY ==================== -->
+  <div id="welcome-overlay" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center p-6 welcome-overlay">
+    <div class="bg-card border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-full bg-accent/20 flex items-center justify-center">
+        <i data-lucide="hand" class="w-8 h-8 text-accent"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black mb-2" id="welcome-title">Welcome!</h2>
+        <p class="text-zinc-400 text-sm leading-relaxed" id="welcome-message">
+          Ready to start your 30-day journey? Let's build some serious gains together.
+        </p>
+      </div>
+      <button onclick="dismissWelcome()" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl hover:bg-[#e55c00] active:scale-[0.98] transition">
+        Let's Go
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN APP (after login) ==================== -->
+  <div id="app-shell" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="p-4 bg-card border-b border-zinc-800 flex justify-between items-center sticky top-0 z-30">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm">30</div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-none tracking-tight">30 DAYS OF GAINS</h1>
+          <p class="text-xs text-zinc-400" id="user-status">Guest Athlete</p>
+        </div>
+      </div>
+      <button onclick="switchScreen('settings')" class="p-2 text-zinc-400 hover:text-white transition">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+      </button>
+    </header>
+
+    <!-- HOME SCREEN -->
+    <section id="screen-home" class="flex-1 p-4 max-w-md mx-auto w-full space-y-5 fade-in">
+      <!-- Progress Banner -->
+      <div class="bg-card p-5 rounded-2xl border border-zinc-800 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-accent uppercase tracking-wider">Overall Progress</span>
+          <h3 class="text-2xl font-black mt-1" id="home-progress-text">0 / 30 DAYS</h3>
+          <p class="text-xs text-zinc-400 mt-1" id="home-streak-text">Current Streak: 0 Days 🔥</p>
+        </div>
+        <div class="w-16 h-16 rounded-full border-4 border-accent flex items-center justify-center font-bold text-lg" id="home-progress-percent">
+          0%
+        </div>
+      </div>
+
+      <!-- Navigation Cards -->
+      <div class="space-y-3">
+        <button onclick="switchScreen('today')" class="w-full p-5 bg-card hover:bg-zinc-800/80 rounded-2xl border-2 border-accent text-left flex items-center justify-between transition active:scale-[0.98]">
+          <div>
+            <span class="bg-accent text-black text-xs font-extrabold px-2 py-0.5 rounded">RECOMMENDED</span>
+            <h4 class="text-xl font-bold mt-2">Today's Workout</h4>
+            <p class="text-xs text-zinc-400 mt-0.5" id="today-summary">Day 1: Push Hypertrophy</p>
+          </div>
+          <i data-lucide="dumbbell" class="text-accent w-8 h-8"></i>
+        </button>
+
+        <button onclick="switchScreen('program')" class="w-full p-4 bg-card hover:bg-zinc-800/80 rounded-2xl border border-zinc-800 text-left flex items-center justify-between transition active:scale-[0.98]">
+          <div>
+            <h4 class="text-lg font-bold">30-Day Program Grid</h4>
+            <p class="text-xs text-zinc-400">View and select any day of the plan</p>
+          </div>
+          <i data-lucide="calendar" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+
+        <button onclick="switchScreen('stats')" class="w-full p-4 bg-card hover:bg-zinc-800/80 rounded-2xl border border-zinc-800 text-left flex items-center justify-between transition active:scale-[0.98]">
+          <div>
+            <h4 class="text-lg font-bold">Gains & Stats</h4>
+            <p class="text-xs text-zinc-400">Total volume, workouts & history</p>
+          </div>
+          <i data-lucide="activity" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+
+        <button onclick="switchScreen('about')" class="w-full p-4 bg-card hover:bg-zinc-800/80 rounded-2xl border border-zinc-800 text-left flex items-center justify-between transition active:scale-[0.98]">
+          <div>
+            <h4 class="text-lg font-bold">About</h4>
+            <p class="text-xs text-zinc-400">Program info & app details</p>
+          </div>
+          <i data-lucide="info" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- TODAY'S WORKOUT -->
+    <section id="screen-today" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4 fade-in">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-1 hover:text-white transition">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+      
+      <div class="bg-card p-4 rounded-xl border border-zinc-800 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-black" id="workout-title">Day 1: Push Day</h2>
+          <p class="text-xs text-zinc-400">Chest, Shoulders & Triceps</p>
+        </div>
+        <button onclick="completeWorkout()" class="bg-accent text-black font-extrabold px-4 py-2.5 rounded-lg text-xs hover:bg-[#e55c00] active:scale-95 transition">
+          COMPLETE
+        </button>
+      </div>
+
+      <div class="space-y-3" id="exercise-list">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- PROGRAM GRID -->
+    <section id="screen-program" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4 fade-in">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-1 hover:text-white transition">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <h2 class="text-lg font-black mb-1">30-Day Program</h2>
+        <p class="text-xs text-zinc-400">Tap any day to view the workout</p>
+      </div>
+
+      <div class="grid grid-cols-5 gap-2" id="program-grid">
+        <!-- Generated by JS -->
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="screen-stats" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4 fade-in">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-1 hover:text-white transition">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 text-center">
+        <p class="text-xs text-accent font-bold uppercase tracking-wider mb-1">Total Volume</p>
+        <p class="text-3xl font-black" id="stats-volume">0 kg</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
+          <p class="text-xs text-zinc-400 mb-1">Workouts</p>
+          <p class="text-2xl font-black" id="stats-workouts">0</p>
+        </div>
+        <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
+          <p class="text-xs text-zinc-400 mb-1">Best Streak</p>
+          <p class="text-2xl font-black" id="stats-streak">0</p>
+        </div>
+      </div>
+
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <h3 class="font-bold mb-3">Recent Activity</h3>
+        <div id="stats-history" class="space-y-2 text-sm text-zinc-400">
+          <p class="text-center py-4">No workouts completed yet</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="screen-about" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4 fade-in">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-1 hover:text-white transition">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-6 rounded-2xl border border-zinc-800 text-center space-y-4">
+        <div class="w-20 h-20 mx-auto rounded-full bg-accent flex items-center justify-center">
+          <span class="text-3xl font-black text-black">30</span>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black">30 DAYS OF GAINS</h2>
+          <p class="text-zinc-400 text-sm mt-1">Version 1.0.0</p>
+        </div>
+      </div>
+
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
+        <h3 class="font-bold text-accent">About the Program</h3>
+        <p class="text-sm text-zinc-300 leading-relaxed">
+          A focused 30-day hypertrophy program designed to build muscle, increase strength, and create lasting habits. 
+          Follow the daily workouts, track your progress, and watch the gains stack up.
+        </p>
+        <p class="text-sm text-zinc-300 leading-relaxed">
+          The program rotates through Push, Pull, and Legs with progressive overload principles built in.
+        </p>
+      </div>
+
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-3">
+        <h3 class="font-bold text-accent">Features</h3>
+        <ul class="text-sm text-zinc-300 space-y-2">
+          <li class="flex items-start space-x-2">
+            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
+            <span>30 structured daily workouts</span>
+          </li>
+          <li class="flex items-start space-x-2">
+            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
+            <span>Progress & streak tracking</span>
+          </li>
+          <li class="flex items-start space-x-2">
+            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
+            <span>Works offline as a PWA</span>
+          </li>
+          <li class="flex items-start space-x-2">
+            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
+            <span>Guest mode + account sync ready</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="text-center text-xs text-zinc-600 pt-2">
+        Built for athletes who show up every day.
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="screen-settings" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4 fade-in">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold mb-1 hover:text-white transition">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
+        <h2 class="text-lg font-bold">App Settings</h2>
+        
+        <div class="pt-2 space-y-3">
+          <button onclick="resetData()" class="w-full py-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-xl text-sm font-bold hover:bg-red-900/50 transition">
+            Reset 30-Day Data
+          </button>
+          <button onclick="logout()" class="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold hover:bg-zinc-700 transition">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ==================== DATA ====================
+    const WORKOUTS = {
+      1: { title: "Day 1: Push Hypertrophy", focus: "Chest, Shoulders & Triceps", exercises: [
+        { name: "Barbell Bench Press", sets: "4 × 8-10", notes: "Controlled tempo" },
+        { name: "Incline Dumbbell Press", sets: "3 × 10-12", notes: "Full stretch" },
+        { name: "Seated Dumbbell Shoulder Press", sets: "3 × 10-12", notes: "" },
+        { name: "Lateral Raises", sets: "3 × 12-15", notes: "Slight lean" },
+        { name: "Tricep Pushdowns", sets: "3 × 12-15", notes: "Full lockout" },
+        { name: "Overhead Tricep Extension", sets: "3 × 10-12", notes: "" }
+      ]},
+      2: { title: "Day 2: Pull Hypertrophy", focus: "Back & Biceps", exercises: [
+        { name: "Pull-Ups / Lat Pulldown", sets: "4 × 8-10", notes: "Full ROM" },
+        { name: "Barbell Rows", sets: "4 × 8-10", notes: "Squeeze at top" },
+        { name: "Seated Cable Rows", sets: "3 × 10-12", notes: "" },
+        { name: "Face Pulls", sets: "3 × 12-15", notes: "External rotation" },
+        { name: "Barbell Curls", sets: "3 × 10-12", notes: "" },
+        { name: "Hammer Curls", sets: "3 × 12-15", notes: "" }
+      ]},
+      3: { title: "Day 3: Legs Hypertrophy", focus: "Quads, Hamstrings & Glutes", exercises: [
+        { name: "Barbell Back Squat", sets: "4 × 8-10", notes: "Depth priority" },
+        { name: "Romanian Deadlift", sets: "3 × 10-12", notes: "Hamstring stretch" },
+        { name: "Leg Press", sets: "3 × 12-15", notes: "" },
+        { name: "Walking Lunges", sets: "3 × 10/leg", notes: "" },
+        { name: "Leg Curls", sets: "3 × 12-15", notes: "" },
+        { name: "Standing Calf Raises", sets: "4 × 12-15", notes: "Full stretch" }
+      ]},
+      4: { title: "Day 4: Push Strength", focus: "Chest, Shoulders & Triceps", exercises: [
+        { name: "Barbell Bench Press", sets: "5 × 5", notes: "Heavy" },
+        { name: "Overhead Press", sets: "4 × 6-8", notes: "" },
+        { name: "Dumbbell Flyes", sets: "3 × 10-12", notes: "" },
+        { name: "Close-Grip Bench", sets: "3 × 8-10", notes: "" },
+        { name: "Lateral Raises", sets: "3 × 12-15", notes: "" }
+      ]},
+      5: { title: "Day 5: Pull Strength", focus: "Back & Biceps", exercises: [
+        { name: "Deadlift", sets: "4 × 5", notes: "Heavy" },
+        { name: "Weighted Pull-Ups", sets: "4 × 6-8", notes: "" },
+        { name: "Chest-Supported Rows", sets: "3 × 8-10", notes: "" },
+        { name: "Barbell Curls", sets: "3 × 8-10", notes: "" },
+        { name: "Farmer's Walks", sets: "3 × 40m", notes: "" }
+      ]}
+    };
+
+    // Fill remaining days with rotation
+    for (let d = 6; d <= 30; d++) {
+      const base = ((d - 1) % 5) + 1;
+      WORKOUTS[d] = {
+        ...WORKOUTS[base],
+        title: `Day ${d}: ${WORKOUTS[base].title.split(': ')[1]}`
+      };
+    }
+
+    // ==================== STATE ====================
+    let user = JSON.parse(localStorage.getItem('user')) || null;
+    let completedDays = JSON.parse(localStorage.getItem('completedDays')) || [];
+    let currentDay = 1;
+
+    // ==================== INIT ====================
+    function init() {
+      lucide.createIcons();
+      
+      // Always show splash for 5 seconds on open
+      setTimeout(() => {
+        document.getElementById('screen-splash').classList.add('hidden');
+        
+        if (user) {
+          document.getElementById('user-status').innerText = user.name || 'Athlete';
+          document.getElementById('app-shell').classList.remove('hidden');
+          switchScreen('home');
+          updateAllStats();
+        } else {
+          document.getElementById('screen-auth').classList.remove('hidden');
+        }
+      }, 5000);
+    }
+
+    // ==================== NAVIGATION ====================
+    function switchScreen(screen) {
+      const screens = ['home', 'today', 'program', 'stats', 'about', 'settings'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if (el) el.classList.add('hidden');
+      });
+      
+      const target = document.getElementById(`screen-${screen}`);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('fade-in');
+      }
+
+      // Populate dynamic content
+      if (screen === 'today') renderWorkout(currentDay);
+      if (screen === 'program') renderProgramGrid();
+      if (screen === 'stats') renderStats();
+      
+      lucide.createIcons();
+    }
+
+    // ==================== AUTH ====================
+    function login(provider) {
+      const names = {
+        google: 'Google Athlete',
+        apple: 'Apple Athlete',
+        guest: 'Guest Athlete'
+      };
+      
+      user = {
+        name: names[provider] || 'Athlete',
+        provider: provider
+      };
+      
+      localStorage.setItem('user', JSON.stringify(user));
+      document.getElementById('user-status').innerText = user.name;
+      
+      // Hide auth, show welcome
+      document.getElementById('screen-auth').classList.add('hidden');
+      
+      // Generic welcome message
+      document.getElementById('welcome-title').innerText = `Welcome, ${user.name.split(' ')[0]}!`;
+      document.getElementById('welcome-message').innerText = 
+        "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
+      
+      document.getElementById('welcome-overlay').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function dismissWelcome() {
+      document.getElementById('welcome-overlay').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+      switchScreen('home');
+      updateAllStats();
+    }
+
+    function logout() {
+      localStorage.removeItem('user');
+      user = null;
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('screen-auth').classList.remove('hidden');
+    }
+
+    // ==================== WORKOUT ====================
+    function renderWorkout(day) {
+      currentDay = day;
+      const workout = WORKOUTS[day] || WORKOUTS[1];
+      
+      document.getElementById('workout-title').innerText = workout.title;
+      document.querySelector('#screen-today .text-xs.text-zinc-400').innerText = workout.focus;
+      
+      const list = document.getElementById('exercise-list');
+      list.innerHTML = workout.exercises.map((ex, i) => `
+        <div class="bg-card p-4 rounded-xl border border-zinc-800 flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-accent">${i + 1}</span>
+              <h4 class="font-bold">${ex.name}</h4>
+            </div>
+            <p class="text-sm text-zinc-400 mt-1">${ex.sets}</p>
+            \( {ex.notes ? `<p class="text-xs text-zinc-500 mt-0.5"> \){ex.notes}</p>` : ''}
+          </div>
+          <div class="w-6 h-6 rounded-full border-2 border-zinc-600 flex items-center justify-center">
+            <div class="w-2.5 h-2.5 rounded-full bg-transparent"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function completeWorkout() {
+      if (!completedDays.includes(currentDay)) {
+        completedDays.push(currentDay);
+        completedDays.sort((a, b) => a - b);
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+      }
+      
+      updateAllStats();
+      
+      // Simple success feedback
+      const btn = event.target;
+      const original = btn.innerText;
+      btn.innerText = 'DONE ✓';
+      btn.classList.add('bg-green-600');
+      
+      setTimeout(() => {
+        btn.innerText = original;
+        btn.classList.remove('bg-green-600');
+        switchScreen('home');
+      }, 900);
+    }
+
+    // ==================== PROGRAM GRID ====================
+    function renderProgramGrid() {
+      const grid = document.getElementById('program-grid');
+      grid.innerHTML = '';
+      
+      for (let d = 1; d <= 30; d++) {
+        const isCompleted = completedDays.includes(d);
+        const isCurrent = d === currentDay;
+        
+        const btn = document.createElement('button');
+        btn.className = `aspect-square rounded-xl font-bold text-sm flex items-center justify-center transition active:scale-95
+          ${isCompleted ? 'bg-accent text-black' : 
+            isCurrent ? 'border-2 border-accent text-accent' : 
+            'bg-card border border-zinc-800 text-zinc-400 hover:border-zinc-600'}`;
+        btn.innerText = d;
+        btn.onclick = () => {
+          currentDay = d;
+          switchScreen('today');
+        };
+        grid.appendChild(btn);
+      }
+    }
+
+    // ==================== STATS ====================
+    function renderStats() {
+      document.getElementById('stats-workouts').innerText = completedDays.length;
+      document.getElementById('stats-streak').innerText = calculateStreak();
+      document.getElementById('stats-volume').innerText = (completedDays.length * 8500).toLocaleString() + ' kg';
+      
+      const history = document.getElementById('stats-history');
+      if (completedDays.length === 0) {
+        history.innerHTML = '<p class="text-center py-4 text-zinc-500">No workouts completed yet</p>';
+      } else {
+        history.innerHTML = completedDays.slice().reverse().slice(0, 8).map(d => `
+          <div class="flex justify-between items-center py-2 border-b border-zinc-800 last:border-0">
+            <span>Day ${d} completed</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-accent"></i>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      }
+    }
+
+    function calculateStreak() {
+      if (completedDays.length === 0) return 0;
+      return completedDays.length;
+    }
+
+    function updateAllStats() {
+      const total = completedDays.length;
+      const pct = Math.round((total / 30) * 100);
+      
+      document.getElementById('home-progress-text').innerText = `${total} / 30 DAYS`;
+      document.getElementById('home-progress-percent').innerText = `${pct}%`;
+      document.getElementById('home-streak-text').innerText = `Current Streak: ${total} Days 🔥`;
+      
+      // Update today's summary
+      const nextDay = total + 1 > 30 ? 30 : total + 1;
+      currentDay = nextDay;
+      const w = WORKOUTS[nextDay];
+      if (w) {
+        document.getElementById('today-summary').innerText = w.title;
+      }
+    }
+
+    function resetData() {
+      if (confirm('Are you sure you want to reset all 30-day progress? This cannot be undone.')) {
+        completedDays = [];
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+        currentDay = 1;
+        updateAllStats();
+        alert('Progress has been reset.');
+        switchScreen('home');
+      }
+    }
+
+    // ==================== START ====================
+    window.onload = init;
+
+    // Service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
