@@ -1,28 +1,20 @@
 {
-  "name": "30 DAYS OF GAINS",
-  "short_name": "30 GAINS",
-  "id": "com.thirtydaysofgains.app",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#181818",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "30 DAYS OF GAINS",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "30GAINS",
+  "start_url": "/",
   "theme_color": "#FF6600",
-  "description": "30 Day Strength Training and Gains Tracker",
-  "categories": ["sports", "fitness"],
+  "id": "com.thirtydaysofgains.app",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/1256/1256650.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/1256/1256650.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ]
 }
