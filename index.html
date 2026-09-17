@@ -60,10 +60,8 @@
   <!-- ==================== SPLASH SCREEN ==================== -->
   <div id="screen-splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center" style="background:#181818;">
     <div class="splash-logo flex flex-col items-center">
-      <!-- CUSTOM LOGO - Replace the src below with your logo image -->
       <img src="logo.png" alt="30 Days of Gains" class="w-32 h-32 object-contain mb-6 rounded-full shadow-lg shadow-orange-500/30"
            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <!-- Fallback if logo.png is missing -->
       <div class="w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6" style="display:none;">
         <span class="text-5xl font-black text-black tracking-tighter">30</span>
       </div>
@@ -99,9 +97,10 @@
         </div>
 
         <div class="space-y-3">
+          <!-- Google Login Button -->
           <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
-          <i data-lucide="chrome" class="w-5 h-5"></i>
-          <span>Continue with Google</span>
+            <i data-lucide="chrome" class="w-5 h-5"></i>
+            <span>Continue with Google</span>
           </button>
 
           <div class="relative flex py-3 items-center">
@@ -110,10 +109,11 @@
             <div class="flex-grow border-t border-zinc-800"></div>
           </div>
 
-         <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
-  <i data-lucide="chrome" class="w-5 h-5"></i>
-  <span>Continue with Google</span>
-</button>
+          <!-- Guest Login Button -->
+          <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2 active:scale-[0.98] transition">
+            <span>Continue as Guest</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -216,7 +216,6 @@
             <p class="text-xs text-zinc-400" id="workout-focus">100 Push-ups • 100 Sit-ups • 100 Squats</p>
           </div>
         </div>
-        <!-- Overall progress bar -->
         <div class="mt-4">
           <div class="flex justify-between text-xs text-zinc-400 mb-1">
             <span>Circuit Progress</span>
@@ -331,7 +330,7 @@
           </li>
           <li class="flex items-start space-x-2">
             <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
-            <span>Guest mode + account sync ready</span>
+            <span>Google login + Guest mode</span>
           </li>
         </ul>
       </div>
@@ -363,8 +362,59 @@
   </div>
 
   <script>
+    // ==================== GOOGLE SIGN-IN ====================
+    const GOOGLE_CLIENT_ID = "609767066962-0ptvmfuhhmvlmphfnf31l7v1kkjqsp7a.apps.googleusercontent.com";
+
+    function handleGoogleCredential(response) {
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        
+        user = {
+          name: payload.name || payload.given_name || "Google Athlete",
+          email: payload.email,
+          picture: payload.picture,
+          provider: "google",
+          googleId: payload.sub
+        };
+
+        localStorage.setItem("user", JSON.stringify(user));
+        document.getElementById("user-status").innerText = user.name;
+
+        document.getElementById("screen-auth").classList.add("hidden");
+        
+        document.getElementById("welcome-title").innerText = "Welcome, " + (user.name.split(" ")[0] || "Athlete") + "!";
+        document.getElementById("welcome-message").innerText = 
+          "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
+        
+        document.getElementById("welcome-overlay").classList.remove("hidden");
+        safeIcons();
+      } catch (e) {
+        console.error("Google login error:", e);
+        alert("Google login failed. Please try again.");
+      }
+    }
+
+    function initGoogleSignIn() {
+      if (typeof google === "undefined" || !google.accounts) {
+        setTimeout(initGoogleSignIn, 500);
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+        auto_select: false
+      });
+
+      const btn = document.getElementById("google-btn");
+      if (btn) {
+        btn.onclick = function () {
+          google.accounts.id.prompt();
+        };
+      }
+    }
+
     // ==================== DATA ====================
-    // Fixed circuit: 100 Push-ups, 100 Sit-ups, 100 Squats every day
     const DAILY_CIRCUIT = {
       title: "Daily Circuit",
       focus: "100 Push-ups • 100 Sit-ups • 100 Squats",
@@ -397,9 +447,7 @@
         if (window.lucide && typeof lucide.createIcons === "function") {
           lucide.createIcons();
         }
-      } catch (e) {
-        console.warn("Lucide icons failed:", e);
-      }
+      } catch (e) {}
     }
 
     // ==================== CORE FLOW ====================
@@ -419,19 +467,19 @@
     }
 
     function init() {
-      // Always force the splash to hide after 5 seconds — nothing can block this
       setTimeout(hideSplash, 5000);
       safeIcons();
+      // Start Google Sign-In
+      setTimeout(initGoogleSignIn, 800);
     }
 
-    // Start as soon as possible
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init);
     } else {
       init();
     }
 
-    // Extra safety net
+    // Safety net
     setTimeout(function() {
       const splash = document.getElementById("screen-splash");
       if (splash && splash.style.display !== "none") {
@@ -458,65 +506,11 @@
 
       safeIcons();
     }
-// ==================== GOOGLE SIGN-IN ====================
-const GOOGLE_CLIENT_ID = "609767066962-0ptvmfuhhmvlmphfnf31l7v1kkjqsp7a.apps.googleusercontent.com";  // ← paste your real Client ID
 
-function handleGoogleCredential(response) {
-  try {
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    
-    user = {
-      name: payload.name || payload.given_name || "Google Athlete",
-      email: payload.email,
-      picture: payload.picture,
-      provider: "google",
-      googleId: payload.sub
-    };
-
-    localStorage.setItem("user", JSON.stringify(user));
-    document.getElementById("user-status").innerText = user.name;
-
-    document.getElementById("screen-auth").classList.add("hidden");
-    
-    document.getElementById("welcome-title").innerText = "Welcome, " + (user.name.split(" ")[0] || "Athlete") + "!";
-    document.getElementById("welcome-message").innerText = 
-      "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
-    
-    document.getElementById("welcome-overlay").classList.remove("hidden");
-    safeIcons();
-  } catch (e) {
-    console.error("Google login error:", e);
-    alert("Google login failed. Please try again.");
-  }
-}
-
-function initGoogleSignIn() {
-  if (typeof google === "undefined" || !google.accounts) {
-    setTimeout(initGoogleSignIn, 500);
-    return;
-  }
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleCredential,
-    auto_select: false
-  });
-
-  const btn = document.getElementById("google-btn");
-  if (btn) {
-    btn.onclick = function () {
-      google.accounts.id.prompt();
-    };
-  }
-}
-
-window.addEventListener("load", function () {
-  setTimeout(initGoogleSignIn, 800);
-});
     // ==================== AUTH ====================
     function login(provider) {
+      // Only used for Guest now
       const names = {
-        google: "Google Athlete",
         guest: "Guest Athlete"
       };
 
@@ -549,7 +543,6 @@ window.addEventListener("load", function () {
     }
 
     // ==================== WORKOUT COUNTERS ====================
-    // Tracks reps for the current day: { pushups: 0, situps: 0, squats: 0 }
     let dayCounts = { pushups: 0, situps: 0, squats: 0 };
     const TARGET = 100;
 
@@ -582,7 +575,6 @@ window.addEventListener("load", function () {
       document.getElementById("circuit-percent").innerText = pct + "%";
       document.getElementById("circuit-bar").style.width = pct + "%";
 
-      // Enable complete button only when all three hit 100
       const btn = document.getElementById("complete-btn");
       const allDone = dayCounts.pushups >= TARGET && dayCounts.situps >= TARGET && dayCounts.squats >= TARGET;
       btn.disabled = !allDone;
@@ -636,35 +628,16 @@ window.addEventListener("load", function () {
                 ${count} / ${TARGET}
               </span>
             </div>
-
-            <!-- Progress bar for this exercise -->
             <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
               <div class="h-full bg-accent transition-all duration-200" style="width:${(count / TARGET) * 100}%"></div>
             </div>
-
-            <!-- Counter controls -->
             <div class="flex items-center justify-between space-x-2">
-              <button onclick="changeCount('${item.key}', -10)" 
-                      class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">
-                -10
-              </button>
-              <button onclick="changeCount('${item.key}', -1)" 
-                      class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-xl active:scale-95 transition">
-                −
-              </button>
-
-              <input type="number" min="0" max="100" value="${count}"
-                     onchange="setCount('${item.key}', this.value)"
+              <button onclick="changeCount('${item.key}', -10)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">-10</button>
+              <button onclick="changeCount('${item.key}', -1)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-xl active:scale-95 transition">−</button>
+              <input type="number" min="0" max="100" value="${count}" onchange="setCount('${item.key}', this.value)"
                      class="w-16 h-12 text-center bg-zinc-900 border border-zinc-700 rounded-xl font-black text-lg text-white focus:outline-none focus:border-accent">
-
-              <button onclick="changeCount('${item.key}', 1)" 
-                      class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">
-                +
-              </button>
-              <button onclick="changeCount('${item.key}', 10)" 
-                      class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">
-                +10
-              </button>
+              <button onclick="changeCount('${item.key}', 1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">+</button>
+              <button onclick="changeCount('${item.key}', 10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">+10</button>
             </div>
           </div>
         `;
@@ -684,7 +657,6 @@ window.addEventListener("load", function () {
     }
 
     function completeWorkout() {
-      // Only allow if all targets met
       if (dayCounts.pushups < TARGET || dayCounts.situps < TARGET || dayCounts.squats < TARGET) {
         alert("Finish all 100 of each exercise first!");
         return;
@@ -769,6 +741,10 @@ window.addEventListener("load", function () {
       if (confirm("Are you sure you want to reset all 30-day progress? This cannot be undone.")) {
         completedDays = [];
         localStorage.setItem("completedDays", JSON.stringify(completedDays));
+        // Also clear all day counters
+        for (let i = 1; i <= 30; i++) {
+          localStorage.removeItem("dayCounts_" + i);
+        }
         currentDay = 1;
         updateAllStats();
         alert("Progress has been reset.");
