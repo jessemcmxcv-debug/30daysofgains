@@ -13,6 +13,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     :root {
@@ -98,14 +99,9 @@
         </div>
 
         <div class="space-y-3">
-          <button onclick="login('google')" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
-            <i data-lucide="chrome" class="w-5 h-5"></i>
-            <span>Continue with Google</span>
-          </button>
-          
-          <button onclick="login('apple')" class="w-full py-3.5 bg-zinc-900 text-white font-bold rounded-xl flex items-center justify-center space-x-3 border border-zinc-700 active:scale-[0.98] transition">
-            <i data-lucide="apple" class="w-5 h-5"></i>
-            <span>Continue with Apple</span>
+          <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
+          <i data-lucide="chrome" class="w-5 h-5"></i>
+          <span>Continue with Google</span>
           </button>
 
           <div class="relative flex py-3 items-center">
@@ -114,10 +110,10 @@
             <div class="flex-grow border-t border-zinc-800"></div>
           </div>
 
-          <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2 active:scale-[0.98] transition">
-            <span>Continue as Guest</span>
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </button>
+         <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
+  <i data-lucide="chrome" class="w-5 h-5"></i>
+  <span>Continue with Google</span>
+</button>
         </div>
       </div>
     </div>
@@ -462,12 +458,65 @@
 
       safeIcons();
     }
+// ==================== GOOGLE SIGN-IN ====================
+const GOOGLE_CLIENT_ID = "609767066962-0ptvmfuhhmvlmphfnf31l7v1kkjqsp7a.apps.googleusercontent.com";  // ← paste your real Client ID
 
+function handleGoogleCredential(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    
+    user = {
+      name: payload.name || payload.given_name || "Google Athlete",
+      email: payload.email,
+      picture: payload.picture,
+      provider: "google",
+      googleId: payload.sub
+    };
+
+    localStorage.setItem("user", JSON.stringify(user));
+    document.getElementById("user-status").innerText = user.name;
+
+    document.getElementById("screen-auth").classList.add("hidden");
+    
+    document.getElementById("welcome-title").innerText = "Welcome, " + (user.name.split(" ")[0] || "Athlete") + "!";
+    document.getElementById("welcome-message").innerText = 
+      "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
+    
+    document.getElementById("welcome-overlay").classList.remove("hidden");
+    safeIcons();
+  } catch (e) {
+    console.error("Google login error:", e);
+    alert("Google login failed. Please try again.");
+  }
+}
+
+function initGoogleSignIn() {
+  if (typeof google === "undefined" || !google.accounts) {
+    setTimeout(initGoogleSignIn, 500);
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false
+  });
+
+  const btn = document.getElementById("google-btn");
+  if (btn) {
+    btn.onclick = function () {
+      google.accounts.id.prompt();
+    };
+  }
+}
+
+window.addEventListener("load", function () {
+  setTimeout(initGoogleSignIn, 800);
+});
     // ==================== AUTH ====================
     function login(provider) {
       const names = {
         google: "Google Athlete",
-        apple: "Apple Athlete",
         guest: "Guest Athlete"
       };
 
