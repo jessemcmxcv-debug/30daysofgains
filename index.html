@@ -356,10 +356,10 @@
     const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHFubmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA0NzM0MzQsImV4cCI6MjA0NjA0OTQzNH0.idCoawoxIpvaSl8ziVKqKP1QQzjWQBods8kTz03eCc4";
 
-    let supabase = null;
+    let supabaseClient = null;
     try {
       if (window.supabase && window.supabase.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
     } catch (e) {
       console.warn("Supabase failed to load:", e);
@@ -486,13 +486,13 @@
       if (!feed) return;
       feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>';
 
-      if (!supabase) {
+      if (!supabaseClient) {
         feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Community temporarily unavailable.</p>';
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from("posts")
           .select("*")
           .order("created_at", { ascending: false })
@@ -534,7 +534,7 @@
     }
 
     async function createPost() {
-      if (!supabase) {
+      if (!supabaseClient) {
         alert("Community is temporarily unavailable. Please try again later.");
         return;
       }
@@ -558,16 +558,16 @@
         const file = fileInput.files[0];
         const fileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g, "_");
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabaseClient.storage
           .from("gains")
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage.from("gains").getPublicUrl(fileName);
+        const { data: urlData } = supabaseClient.storage.from("gains").getPublicUrl(fileName);
         const imageUrl = urlData.publicUrl;
 
-        const { error: insertError } = await supabase.from("posts").insert({
+        const { error: insertError } = await supabaseClient.from("posts").insert({
           user_name: (user && user.name) ? user.name : "Athlete",
           caption: caption || null,
           image_url: imageUrl,
@@ -596,9 +596,9 @@
     }
 
     async function likePost(postId, currentLikes) {
-      if (!supabase) return;
+      if (!supabaseClient) return;
       try {
-        await supabase.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
+        await supabaseClient.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
         loadCommunityFeed();
       } catch (err) {
         console.error(err);
