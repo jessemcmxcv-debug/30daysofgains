@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="30GAINS">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -43,6 +44,22 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-center;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .cal-day.today { border: 2px solid #FF6600; }
+    .cal-day.completed { background: #FF6600; color: #000; }
+    .cal-day.future { opacity: 0.35; pointer-events: none; }
+    .cal-day.past-empty { background: #262626; border: 1px solid #3f3f46; }
+    .cal-day.selected { ring: 2px; box-shadow: 0 0 0 2px #FF6600; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -81,7 +98,7 @@
       <div class="w-full max-w-md bg-card rounded-2xl border border-zinc-800 p-8 space-y-6 fade-in">
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-black">WELCOME BACK</h2>
-          <p class="text-sm text-zinc-400">Sign in to sync your 30-day gains across all devices</p>
+          <p class="text-sm text-zinc-400">Sign in to track your gains</p>
         </div>
         <div class="space-y-3">
           <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
@@ -102,7 +119,7 @@
     </div>
   </section>
 
-  <!-- WELCOME OVERLAY -->
+  <!-- WELCOME -->
   <div id="welcome-overlay" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center p-6">
     <div class="bg-card border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl fade-in">
       <div class="w-16 h-16 mx-auto rounded-full bg-accent/20 flex items-center justify-center">
@@ -111,7 +128,7 @@
       <div>
         <h2 class="text-2xl font-black mb-2" id="welcome-title">Welcome!</h2>
         <p class="text-zinc-400 text-sm leading-relaxed" id="welcome-message">
-          Ready to start your 30-day journey? Let's build some serious gains together.
+          Ready to start your journey? Pick Weight Gain or Weight Loss and show up every day.
         </p>
       </div>
       <button onclick="dismissWelcome()" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
@@ -141,21 +158,45 @@
     <section id="screen-home" class="flex-1 p-4 max-w-md mx-auto w-full space-y-5">
       <div class="bg-card p-5 rounded-2xl border border-zinc-800 flex items-center justify-between">
         <div>
-          <span class="text-xs font-bold text-accent uppercase tracking-wider">Overall Progress</span>
-          <h3 class="text-2xl font-black mt-1" id="home-progress-text">0 / 30 DAYS</h3>
+          <span class="text-xs font-bold text-accent uppercase tracking-wider">This Month</span>
+          <h3 class="text-2xl font-black mt-1" id="home-progress-text">0 days done</h3>
           <p class="text-xs text-zinc-400 mt-1" id="home-streak-text">Current Streak: 0 Days 🔥</p>
         </div>
         <div class="w-16 h-16 rounded-full border-4 border-accent flex items-center justify-center font-bold text-lg" id="home-progress-percent">0%</div>
       </div>
 
+      <!-- Program selector -->
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="selectProgram('gain')" id="btn-program-gain"
+                class="p-4 rounded-2xl border-2 text-left transition active:scale-[0.98]">
+          <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
+          <h4 class="text-lg font-black">Weight Gain</h4>
+          <p class="text-xs text-zinc-400 mt-1">100 Push · 100 Sit · 100 Squat</p>
+        </button>
+        <button onclick="selectProgram('loss')" id="btn-program-loss"
+                class="p-4 rounded-2xl border-2 text-left transition active:scale-[0.98]">
+          <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
+          <h4 class="text-lg font-black">Weight Loss</h4>
+          <p class="text-xs text-zinc-400 mt-1">100 JJ · 50 Push · 50 Sit</p>
+        </button>
+      </div>
+
       <div class="space-y-3">
-        <button onclick="switchScreen('today')" class="w-full p-5 bg-card rounded-2xl border-2 border-accent text-left flex items-center justify-between active:scale-[0.98] transition">
+        <button onclick="openTodayWorkout()" class="w-full p-5 bg-card rounded-2xl border-2 border-accent text-left flex items-center justify-between active:scale-[0.98] transition">
           <div>
-            <span class="bg-accent text-black text-xs font-extrabold px-2 py-0.5 rounded">RECOMMENDED</span>
+            <span class="bg-accent text-black text-xs font-extrabold px-2 py-0.5 rounded">TODAY</span>
             <h4 class="text-xl font-bold mt-2">Today's Workout</h4>
-            <p class="text-xs text-zinc-400 mt-0.5" id="today-summary">Day 1: 100 Push-ups, Sit-ups & Squats</p>
+            <p class="text-xs text-zinc-400 mt-0.5" id="today-summary">Select a program above</p>
           </div>
           <i data-lucide="dumbbell" class="text-accent w-8 h-8"></i>
+        </button>
+
+        <button onclick="switchScreen('calendar')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
+          <div>
+            <h4 class="text-lg font-bold">Calendar</h4>
+            <p class="text-xs text-zinc-400">Monthly view · accurate dates</p>
+          </div>
+          <i data-lucide="calendar" class="w-6 h-6 text-zinc-400"></i>
         </button>
 
         <button onclick="switchScreen('community')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
@@ -166,18 +207,10 @@
           <i data-lucide="users" class="w-6 h-6 text-zinc-400"></i>
         </button>
 
-        <button onclick="switchScreen('program')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
-          <div>
-            <h4 class="text-lg font-bold">30-Day Program Grid</h4>
-            <p class="text-xs text-zinc-400">View and select any day of the plan</p>
-          </div>
-          <i data-lucide="calendar" class="w-6 h-6 text-zinc-400"></i>
-        </button>
-
         <button onclick="switchScreen('stats')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
           <div>
             <h4 class="text-lg font-bold">Gains & Stats</h4>
-            <p class="text-xs text-zinc-400">Total volume, workouts & history</p>
+            <p class="text-xs text-zinc-400">Totals, streaks & history</p>
           </div>
           <i data-lucide="activity" class="w-6 h-6 text-zinc-400"></i>
         </button>
@@ -192,37 +225,7 @@
       </div>
     </section>
 
-    <!-- COMMUNITY -->
-    <section id="screen-community" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
-      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
-      </button>
-
-      <div class="bg-card p-4 rounded-xl border border-zinc-800">
-        <h2 class="text-lg font-black mb-1">Community</h2>
-        <p class="text-xs text-zinc-400">Share your gains and motivate each other</p>
-      </div>
-
-      <!-- Create Post -->
-      <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
-        <h3 class="font-bold text-sm">Post Your Gains</h3>
-        <input type="file" id="post-image" accept="image/*" class="w-full text-sm text-zinc-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-black file:font-bold">
-        <textarea id="post-caption" rows="2" placeholder="Write a caption... (e.g. Day 12 done 💪)" 
-                  class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-accent resize-none"></textarea>
-        <button onclick="createPost()" id="post-btn" class="w-full py-3 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
-          Share Post
-        </button>
-        <p id="post-status" class="text-xs text-center text-zinc-500 hidden"></p>
-      </div>
-
-      <!-- Feed -->
-      <div id="community-feed" class="space-y-4">
-        <p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>
-      </div>
-    </section>
-
-    <!-- TODAY -->
+    <!-- WORKOUT (today only) -->
     <section id="screen-today" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
@@ -231,8 +234,9 @@
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
         <div class="flex justify-between items-start">
           <div>
-            <h2 class="text-xl font-black" id="workout-title">Day 1: Daily Circuit</h2>
-            <p class="text-xs text-zinc-400" id="workout-focus">100 Push-ups • 100 Sit-ups • 100 Squats</p>
+            <p class="text-xs text-accent font-bold uppercase" id="workout-program-label">Weight Gain</p>
+            <h2 class="text-xl font-black" id="workout-title">Today's Circuit</h2>
+            <p class="text-xs text-zinc-400" id="workout-date"></p>
           </div>
         </div>
         <div class="mt-4">
@@ -246,23 +250,71 @@
         </div>
       </div>
       <div class="space-y-3" id="exercise-list"></div>
-      <button onclick="completeWorkout()" id="complete-btn" 
-              class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none" disabled>
+      <button onclick="completeWorkout()" id="complete-btn"
+              class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none"
+              disabled>
         COMPLETE WORKOUT
       </button>
+      <p class="text-center text-xs text-zinc-500" id="workout-lock-msg"></p>
     </section>
 
-    <!-- PROGRAM -->
-    <section id="screen-program" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+    <!-- CALENDAR -->
+    <section id="screen-calendar" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <div class="flex items-center justify-between mb-4">
+          <button onclick="changeMonth(-1)" class="p-2 rounded-lg bg-zinc-800 active:scale-95">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          <h2 class="text-lg font-black" id="cal-month-label">September 2026</h2>
+          <button onclick="changeMonth(1)" class="p-2 rounded-lg bg-zinc-800 active:scale-95">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs text-zinc-500 font-bold">
+          <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div class="grid grid-cols-7 gap-1" id="calendar-grid"></div>
+        <div class="flex flex-wrap gap-3 mt-4 text-xs text-zinc-400">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-accent inline-block"></span> Completed</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded border-2 border-accent inline-block"></span> Today</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-zinc-700 inline-block opacity-40"></span> Future (locked)</span>
+        </div>
+      </div>
+
+      <div id="cal-day-detail" class="bg-card p-4 rounded-xl border border-zinc-800 hidden">
+        <h3 class="font-bold mb-2" id="cal-detail-title">Day details</h3>
+        <div id="cal-detail-body" class="text-sm text-zinc-300 space-y-1"></div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section id="screen-community" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
-        <h2 class="text-lg font-black mb-1">30-Day Program</h2>
-        <p class="text-xs text-zinc-400">Tap any day to view the workout</p>
+        <h2 class="text-lg font-black mb-1">Community</h2>
+        <p class="text-xs text-zinc-400">Share your gains and motivate each other</p>
       </div>
-      <div class="grid grid-cols-5 gap-2" id="program-grid"></div>
+      <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
+        <h3 class="font-bold text-sm">Post Your Gains</h3>
+        <input type="file" id="post-image" accept="image/*" class="w-full text-sm text-zinc-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-black file:font-bold">
+        <textarea id="post-caption" rows="2" placeholder="Write a caption..."
+                  class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-accent resize-none"></textarea>
+        <button onclick="createPost()" id="post-btn" class="w-full py-3 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
+          Share Post
+        </button>
+        <p id="post-status" class="text-xs text-center text-zinc-500 hidden"></p>
+      </div>
+      <div id="community-feed" class="space-y-4">
+        <p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>
+      </div>
     </section>
 
     <!-- STATS -->
@@ -272,12 +324,12 @@
         <span>BACK TO HOME</span>
       </button>
       <div class="bg-card p-5 rounded-xl border border-zinc-800 text-center">
-        <p class="text-xs text-accent font-bold uppercase tracking-wider mb-1">Total Reps</p>
+        <p class="text-xs text-accent font-bold uppercase tracking-wider mb-1">Total Reps (all time)</p>
         <p class="text-3xl font-black" id="stats-volume">0 reps</p>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
-          <p class="text-xs text-zinc-400 mb-1">Workouts</p>
+          <p class="text-xs text-zinc-400 mb-1">Workouts Done</p>
           <p class="text-2xl font-black" id="stats-workouts">0</p>
         </div>
         <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
@@ -307,27 +359,15 @@
         </div>
         <div>
           <h2 class="text-2xl font-black">30 DAYS OF GAINS</h2>
-          <p class="text-zinc-400 text-sm mt-1">Version 1.1.0</p>
+          <p class="text-zinc-400 text-sm mt-1">Version 2.0.0</p>
         </div>
       </div>
-      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
-        <h3 class="font-bold text-accent">About the Program</h3>
-        <p class="text-sm text-zinc-300 leading-relaxed">
-          A simple but brutal 30-day challenge: every day you complete
-          <strong>100 Push-ups, 100 Sit-ups, and 100 Squats</strong>.
-        </p>
-        <p class="text-sm text-zinc-300 leading-relaxed">
-          Break the reps into as many sets as you need. Consistency beats perfection.
-        </p>
-      </div>
       <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-3">
-        <h3 class="font-bold text-accent">Features</h3>
-        <ul class="text-sm text-zinc-300 space-y-2">
-          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>100 Push-ups + 100 Sit-ups + 100 Squats daily</span></li>
-          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Progress & streak tracking</span></li>
-          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Community – share gains & motivate others</span></li>
-          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Works offline as a PWA</span></li>
-        </ul>
+        <h3 class="font-bold text-accent">Weight Gain</h3>
+        <p class="text-sm text-zinc-300">100 Push-ups · 100 Sit-ups · 100 Squats every day.</p>
+        <h3 class="font-bold text-accent pt-2">Weight Loss</h3>
+        <p class="text-sm text-zinc-300">100 Jumping Jacks · 50 Push-ups · 50 Sit-ups every day.</p>
+        <p class="text-sm text-zinc-400 pt-2">You can only complete today's workout — no faking future days. Counters can go past the target if you want extra reps.</p>
       </div>
     </section>
 
@@ -341,7 +381,7 @@
         <h2 class="text-lg font-bold">App Settings</h2>
         <div class="pt-2 space-y-3">
           <button onclick="resetData()" class="w-full py-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-xl text-sm font-bold">
-            Reset 30-Day Data
+            Reset All Progress
           </button>
           <button onclick="logout()" class="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">
             Sign Out
@@ -352,7 +392,7 @@
   </div>
 
   <script>
-    // ==================== SUPABASE (safe init) ====================
+    // ==================== SUPABASE ====================
     const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHF6bmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTM3MzQsImV4cCI6MjEwNTIyOTczNH0.idCoawoxIpvaSl8ziVKqKP1QQ2jWQBod58kTzO3eCc4";
 
@@ -365,57 +405,71 @@
       console.warn("Supabase failed to load:", e);
     }
 
-    // ==================== DATA ====================
-    const DAILY_CIRCUIT = {
-      title: "Daily Circuit",
-      focus: "100 Push-ups • 100 Sit-ups • 100 Squats",
-      exercises: [
-        { name: "Push-ups", sets: "100 total", notes: "Break into sets as needed" },
-        { name: "Sit-ups", sets: "100 total", notes: "Break into sets as needed" },
-        { name: "Squats", sets: "100 total", notes: "Bodyweight. Full depth." }
-      ]
+    // ==================== PROGRAMS ====================
+    const PROGRAMS = {
+      gain: {
+        id: "gain",
+        name: "Weight Gain",
+        exercises: [
+          { key: "pushups", name: "Push-ups", icon: "💪", target: 100 },
+          { key: "situps", name: "Sit-ups", icon: "🔥", target: 100 },
+          { key: "squats", name: "Squats", icon: "🦵", target: 100 }
+        ]
+      },
+      loss: {
+        id: "loss",
+        name: "Weight Loss",
+        exercises: [
+          { key: "jumpingjacks", name: "Jumping Jacks", icon: "⚡", target: 100 },
+          { key: "pushups", name: "Push-ups", icon: "💪", target: 50 },
+          { key: "situps", name: "Sit-ups", icon: "🔥", target: 50 }
+        ]
+      }
     };
-    const WORKOUTS = {};
-    for (let d = 1; d <= 30; d++) {
-      WORKOUTS[d] = { title: "Day " + d + ": Daily Circuit", focus: DAILY_CIRCUIT.focus, exercises: DAILY_CIRCUIT.exercises };
-    }
 
+    // ==================== STATE ====================
     let user = null;
     try { user = JSON.parse(localStorage.getItem("user")); } catch(e) {}
-    let completedDays = [];
-    try { completedDays = JSON.parse(localStorage.getItem("completedDays")) || []; } catch(e) {}
-    let currentDay = 1;
-    let dayCounts = { pushups: 0, situps: 0, squats: 0 };
-    const TARGET = 100;
+
+    let activeProgram = localStorage.getItem("activeProgram") || "gain";
+
+    // dayLog: { "2026-09-18": { program, counts: {...}, completed: true } }
+    let dayLog = {};
+    try { dayLog = JSON.parse(localStorage.getItem("dayLog")) || {}; } catch(e) {}
+
+    let calYear, calMonth; // 0-indexed month
+    let dayCounts = {};
+    let viewingDate = null; // YYYY-MM-DD currently open in workout screen
+
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    }
 
     function safeIcons() {
       try { if (window.lucide) lucide.createIcons(); } catch(e) {}
     }
 
-    // ==================== CORE FLOW (emergency splash) ====================
+    // ==================== SPLASH ====================
     function hideSplash() {
       try {
         const splash = document.getElementById("screen-splash");
         if (splash) {
           splash.style.display = "none";
           splash.style.visibility = "hidden";
-          splash.style.opacity = "0";
         }
         if (user) {
           const status = document.getElementById("user-status");
           if (status) status.innerText = user.name || "Athlete";
-          const shell = document.getElementById("app-shell");
-          if (shell) shell.classList.remove("hidden");
+          document.getElementById("app-shell").classList.remove("hidden");
           switchScreen("home");
-          updateAllStats();
+          updateHomeUI();
         } else {
-          const auth = document.getElementById("screen-auth");
-          if (auth) auth.classList.remove("hidden");
+          document.getElementById("screen-auth").classList.remove("hidden");
         }
         safeIcons();
       } catch (e) {
-        console.error("hideSplash error:", e);
-        // Last resort – force hide splash
+        console.error(e);
         var s = document.getElementById("screen-splash");
         if (s) s.style.display = "none";
         var a = document.getElementById("screen-auth");
@@ -423,24 +477,14 @@
       }
     }
 
-    // Force hide splash at multiple times so it never stays stuck
     setTimeout(hideSplash, 3000);
     setTimeout(hideSplash, 5000);
     setTimeout(hideSplash, 7000);
+    window.addEventListener("load", function() { setTimeout(hideSplash, 1000); });
 
-    function init() {
-      safeIcons();
-    }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-    else init();
-
-    // Absolute safety net
-    window.addEventListener("load", function() {
-      setTimeout(hideSplash, 1000);
-    });
-
+    // ==================== NAV ====================
     function switchScreen(screen) {
-      ["home","today","program","stats","about","settings","community"].forEach(function(s) {
+      ["home","today","calendar","stats","about","settings","community"].forEach(function(s) {
         const el = document.getElementById("screen-" + s);
         if (el) el.classList.add("hidden");
       });
@@ -449,10 +493,15 @@
         target.classList.remove("hidden");
         target.classList.add("fade-in");
       }
-      if (screen === "today") renderWorkout(currentDay);
-      if (screen === "program") renderProgramGrid();
+      if (screen === "calendar") {
+        const now = new Date();
+        calYear = now.getFullYear();
+        calMonth = now.getMonth();
+        renderCalendar();
+      }
       if (screen === "stats") renderStats();
       if (screen === "community") loadCommunityFeed();
+      if (screen === "home") updateHomeUI();
       safeIcons();
     }
 
@@ -463,7 +512,6 @@
       document.getElementById("user-status").innerText = user.name;
       document.getElementById("screen-auth").classList.add("hidden");
       document.getElementById("welcome-title").innerText = "Welcome, " + user.name.split(" ")[0] + "!";
-      document.getElementById("welcome-message").innerText = "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
       document.getElementById("welcome-overlay").classList.remove("hidden");
       safeIcons();
     }
@@ -471,7 +519,6 @@
       document.getElementById("welcome-overlay").classList.add("hidden");
       document.getElementById("app-shell").classList.remove("hidden");
       switchScreen("home");
-      updateAllStats();
     }
     function logout() {
       localStorage.removeItem("user");
@@ -480,51 +527,375 @@
       document.getElementById("screen-auth").classList.remove("hidden");
     }
 
+    // ==================== PROGRAM SELECT ====================
+    function selectProgram(id) {
+      activeProgram = id;
+      localStorage.setItem("activeProgram", id);
+      updateHomeUI();
+    }
+
+    function updateHomeUI() {
+      const gainBtn = document.getElementById("btn-program-gain");
+      const lossBtn = document.getElementById("btn-program-loss");
+      if (activeProgram === "gain") {
+        gainBtn.className = "p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left transition active:scale-[0.98]";
+        lossBtn.className = "p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left transition active:scale-[0.98]";
+      } else {
+        lossBtn.className = "p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left transition active:scale-[0.98]";
+        gainBtn.className = "p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left transition active:scale-[0.98]";
+      }
+
+      const prog = PROGRAMS[activeProgram];
+      document.getElementById("today-summary").innerText = prog.name + " · " + prog.exercises.map(function(e){ return e.target + " " + e.name.split(" ")[0]; }).join(" · ");
+
+      // Month progress
+      const now = new Date();
+      const y = now.getFullYear(), m = now.getMonth();
+      let completedThisMonth = 0;
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      for (let d = 1; d <= daysInMonth; d++) {
+        const key = y + "-" + String(m+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+        if (dayLog[key] && dayLog[key].completed) completedThisMonth++;
+      }
+      const pct = Math.round((completedThisMonth / daysInMonth) * 100);
+      document.getElementById("home-progress-text").innerText = completedThisMonth + " days done";
+      document.getElementById("home-progress-percent").innerText = pct + "%";
+      document.getElementById("home-streak-text").innerText = "Current Streak: " + calcStreak() + " Days 🔥";
+    }
+
+    function calcStreak() {
+      let streak = 0;
+      const d = new Date();
+      for (let i = 0; i < 365; i++) {
+        const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        if (dayLog[key] && dayLog[key].completed) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          // allow today not done yet without breaking streak if yesterday was done
+          if (i === 0) { d.setDate(d.getDate() - 1); continue; }
+          break;
+        }
+      }
+      return streak;
+    }
+
+    // ==================== WORKOUT ====================
+    function openTodayWorkout() {
+      viewingDate = todayStr();
+      openWorkoutForDate(viewingDate);
+    }
+
+    function openWorkoutForDate(dateStr) {
+      viewingDate = dateStr;
+      const isToday = dateStr === todayStr();
+      const isFuture = dateStr > todayStr();
+
+      if (isFuture) {
+        alert("You can't log future days. Come back on that date!");
+        return;
+      }
+
+      // Load counts for this date
+      const entry = dayLog[dateStr];
+      const prog = PROGRAMS[activeProgram];
+      dayCounts = {};
+      prog.exercises.forEach(function(ex) {
+        dayCounts[ex.key] = (entry && entry.counts && entry.counts[ex.key]) ? entry.counts[ex.key] : 0;
+      });
+
+      document.getElementById("workout-program-label").innerText = prog.name;
+      document.getElementById("workout-title").innerText = isToday ? "Today's Circuit" : "Workout";
+      document.getElementById("workout-date").innerText = formatDateNice(dateStr);
+
+      const lockMsg = document.getElementById("workout-lock-msg");
+      if (!isToday && entry && entry.completed) {
+        lockMsg.innerText = "This day is already completed.";
+      } else if (!isToday) {
+        lockMsg.innerText = "Past day — you can still finish if needed.";
+      } else {
+        lockMsg.innerText = "";
+      }
+
+      renderCounters();
+      updateCircuitProgress();
+      switchScreen("today");
+    }
+
+    function formatDateNice(dateStr) {
+      const [y,m,d] = dateStr.split("-").map(Number);
+      const dt = new Date(y, m-1, d);
+      return dt.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function saveDayCounts() {
+      if (!dayLog[viewingDate]) dayLog[viewingDate] = { program: activeProgram, counts: {}, completed: false };
+      dayLog[viewingDate].counts = Object.assign({}, dayCounts);
+      dayLog[viewingDate].program = activeProgram;
+      localStorage.setItem("dayLog", JSON.stringify(dayLog));
+    }
+
+    function updateCircuitProgress() {
+      const prog = PROGRAMS[activeProgram];
+      let done = 0, total = 0;
+      prog.exercises.forEach(function(ex) {
+        done += Math.min(dayCounts[ex.key] || 0, ex.target);
+        total += ex.target;
+      });
+      const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+      document.getElementById("circuit-percent").innerText = pct + "%";
+      document.getElementById("circuit-bar").style.width = pct + "%";
+
+      const allDone = prog.exercises.every(function(ex) {
+        return (dayCounts[ex.key] || 0) >= ex.target;
+      });
+      const btn = document.getElementById("complete-btn");
+      const already = dayLog[viewingDate] && dayLog[viewingDate].completed;
+      btn.disabled = !allDone || already;
+      if (already) {
+        btn.innerText = "ALREADY COMPLETED ✓";
+        btn.classList.remove("bg-accent");
+        btn.classList.add("bg-green-600");
+      } else if (allDone) {
+        btn.innerText = "COMPLETE WORKOUT ✓";
+        btn.classList.remove("bg-accent");
+        btn.classList.add("bg-green-600");
+      } else {
+        btn.innerText = "COMPLETE WORKOUT";
+        btn.classList.add("bg-accent");
+        btn.classList.remove("bg-green-600");
+      }
+    }
+
+    function changeCount(key, delta) {
+      if (viewingDate > todayStr()) return;
+      dayCounts[key] = Math.max(0, (dayCounts[key] || 0) + delta);
+      // No upper cap — can go above target
+      saveDayCounts();
+      renderCounters();
+      updateCircuitProgress();
+    }
+
+    function setCount(key, value) {
+      if (viewingDate > todayStr()) return;
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 0) return;
+      dayCounts[key] = num;
+      saveDayCounts();
+      renderCounters();
+      updateCircuitProgress();
+    }
+
+    function renderCounters() {
+      const list = document.getElementById("exercise-list");
+      const prog = PROGRAMS[activeProgram];
+      list.innerHTML = prog.exercises.map(function(ex) {
+        const count = dayCounts[ex.key] || 0;
+        const done = count >= ex.target;
+        const barPct = Math.min(100, Math.round((count / ex.target) * 100));
+        return `
+          <div class="bg-card p-4 rounded-xl border ${done ? 'border-accent' : 'border-zinc-800'}">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-lg">${ex.icon}</span>
+                <h4 class="font-bold">${ex.name}</h4>
+              </div>
+              <span class="text-xs font-bold ${done ? 'text-accent' : 'text-zinc-500'}">
+                ${count} / ${ex.target}${count > ex.target ? ' (+' + (count - ex.target) + ')' : ''}
+              </span>
+            </div>
+            <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
+              <div class="h-full bg-accent transition-all duration-200" style="width:${barPct}%"></div>
+            </div>
+            <div class="flex items-center justify-between space-x-2">
+              <button onclick="changeCount('${ex.key}', -10)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">-10</button>
+              <button onclick="changeCount('${ex.key}', -1)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-xl active:scale-95 transition">−</button>
+              <input type="number" min="0" value="${count}" onchange="setCount('${ex.key}', this.value)"
+                     class="w-16 h-12 text-center bg-zinc-900 border border-zinc-700 rounded-xl font-black text-lg text-white focus:outline-none focus:border-accent">
+              <button onclick="changeCount('${ex.key}', 1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">+</button>
+              <button onclick="changeCount('${ex.key}', 10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">+10</button>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function completeWorkout() {
+      if (viewingDate > todayStr()) {
+        alert("You can't complete future days.");
+        return;
+      }
+      const prog = PROGRAMS[activeProgram];
+      const allDone = prog.exercises.every(function(ex) {
+        return (dayCounts[ex.key] || 0) >= ex.target;
+      });
+      if (!allDone) {
+        alert("Hit the target on every exercise first!");
+        return;
+      }
+      if (!dayLog[viewingDate]) dayLog[viewingDate] = { program: activeProgram, counts: {}, completed: false };
+      dayLog[viewingDate].counts = Object.assign({}, dayCounts);
+      dayLog[viewingDate].completed = true;
+      dayLog[viewingDate].program = activeProgram;
+      localStorage.setItem("dayLog", JSON.stringify(dayLog));
+
+      const btn = document.getElementById("complete-btn");
+      btn.innerText = "DONE ✓";
+      btn.classList.add("bg-green-600");
+      setTimeout(function() {
+        switchScreen("home");
+        updateHomeUI();
+      }, 700);
+    }
+
+    // ==================== CALENDAR ====================
+    function changeMonth(delta) {
+      calMonth += delta;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const label = document.getElementById("cal-month-label");
+      const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      label.innerText = months[calMonth] + " " + calYear;
+
+      const grid = document.getElementById("calendar-grid");
+      grid.innerHTML = "";
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = todayStr();
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        grid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = calYear + "-" + String(calMonth+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+        const btn = document.createElement("button");
+        btn.className = "cal-day";
+        btn.innerHTML = "<span>" + d + "</span>";
+
+        const isFuture = dateStr > today;
+        const isToday = dateStr === today;
+        const entry = dayLog[dateStr];
+        const completed = entry && entry.completed;
+
+        if (isFuture) btn.classList.add("future");
+        else if (completed) btn.classList.add("completed");
+        else btn.classList.add("past-empty");
+        if (isToday) btn.classList.add("today");
+
+        if (!isFuture) {
+          btn.onclick = (function(ds) {
+            return function() {
+              showCalDetail(ds);
+              // Allow opening workout for today or past
+              openWorkoutForDate(ds);
+            };
+          })(dateStr);
+        }
+
+        grid.appendChild(btn);
+      }
+      safeIcons();
+    }
+
+    function showCalDetail(dateStr) {
+      const box = document.getElementById("cal-day-detail");
+      const title = document.getElementById("cal-detail-title");
+      const body = document.getElementById("cal-detail-body");
+      box.classList.remove("hidden");
+      title.innerText = formatDateNice(dateStr);
+      const entry = dayLog[dateStr];
+      if (!entry) {
+        body.innerHTML = "<p class='text-zinc-500'>No workout logged.</p>";
+        return;
+      }
+      const prog = PROGRAMS[entry.program] || PROGRAMS.gain;
+      let html = "<p class='text-accent font-bold mb-2'>" + prog.name + (entry.completed ? " ✓ Completed" : " (in progress)") + "</p>";
+      prog.exercises.forEach(function(ex) {
+        const c = (entry.counts && entry.counts[ex.key]) || 0;
+        html += "<p>" + ex.icon + " " + ex.name + ": <strong>" + c + "</strong> / " + ex.target + "</p>";
+      });
+      body.innerHTML = html;
+    }
+
+    // ==================== STATS ====================
+    function renderStats() {
+      let totalReps = 0;
+      let workouts = 0;
+      const dates = Object.keys(dayLog).sort().reverse();
+      dates.forEach(function(k) {
+        const e = dayLog[k];
+        if (e.completed) workouts++;
+        if (e.counts) {
+          Object.keys(e.counts).forEach(function(ck) {
+            totalReps += e.counts[ck] || 0;
+          });
+        }
+      });
+      document.getElementById("stats-volume").innerText = totalReps.toLocaleString() + " reps";
+      document.getElementById("stats-workouts").innerText = workouts;
+      document.getElementById("stats-streak").innerText = calcStreak();
+
+      const history = document.getElementById("stats-history");
+      const completed = dates.filter(function(k){ return dayLog[k].completed; }).slice(0, 10);
+      if (completed.length === 0) {
+        history.innerHTML = '<p class="text-center py-4 text-zinc-500">No workouts completed yet</p>';
+      } else {
+        history.innerHTML = completed.map(function(k) {
+          const p = dayLog[k].program === "loss" ? "Weight Loss" : "Weight Gain";
+          return '<div class="flex justify-between items-center py-2 border-b border-zinc-800"><span>' + formatDateNice(k) + '</span><span class="text-accent text-xs">' + p + ' ✓</span></div>';
+        }).join("");
+      }
+    }
+
+    function resetData() {
+      if (confirm("Reset ALL progress? This cannot be undone.")) {
+        dayLog = {};
+        localStorage.setItem("dayLog", JSON.stringify({}));
+        updateHomeUI();
+        alert("Progress reset.");
+        switchScreen("home");
+      }
+    }
+
     // ==================== COMMUNITY ====================
     async function loadCommunityFeed() {
       const feed = document.getElementById("community-feed");
       if (!feed) return;
       feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>';
-
       if (!supabaseClient) {
         feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Community temporarily unavailable.</p>';
         return;
       }
-
       try {
-        const { data, error } = await supabaseClient
-          .from("posts")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(30);
-
+        const { data, error } = await supabaseClient.from("posts").select("*").order("created_at", { ascending: false }).limit(30);
         if (error) throw error;
-
         if (!data || data.length === 0) {
-          feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">No posts yet. Be the first to share your gains!</p>';
+          feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">No posts yet. Be the first!</p>';
           return;
         }
-
         feed.innerHTML = data.map(function(post) {
           const date = post.created_at ? new Date(post.created_at).toLocaleDateString() : "";
           return `
             <div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
-              ${post.image_url ? `<img src="${post.image_url}" alt="Gains" class="w-full max-h-80 object-cover">` : ""}
+              ${post.image_url ? '<img src="'+post.image_url+'" alt="Gains" class="w-full max-h-80 object-cover">' : ""}
               <div class="p-4 space-y-2">
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-sm">${post.user_name || "Athlete"}</span>
                   <span class="text-xs text-zinc-500">${date}</span>
                 </div>
-                ${post.caption ? `<p class="text-sm text-zinc-300">${post.caption}</p>` : ""}
-                <div class="flex items-center space-x-4 pt-1">
-                  <button onclick="likePost('${post.id}', ${post.likes || 0})" class="flex items-center space-x-1 text-sm text-zinc-400 hover:text-accent">
-                    <i data-lucide="heart" class="w-4 h-4"></i>
-                    <span>${post.likes || 0}</span>
-                  </button>
-                </div>
+                ${post.caption ? '<p class="text-sm text-zinc-300">'+post.caption+'</p>' : ""}
+                <button onclick="likePost('${post.id}', ${post.likes||0})" class="flex items-center space-x-1 text-sm text-zinc-400">
+                  <i data-lucide="heart" class="w-4 h-4"></i>
+                  <span>${post.likes||0}</span>
+                </button>
               </div>
-            </div>
-          `;
+            </div>`;
         }).join("");
         safeIcons();
       } catch (err) {
@@ -534,65 +905,42 @@
     }
 
     async function createPost() {
-      if (!supabaseClient) {
-        alert("Community is temporarily unavailable. Please try again later.");
-        return;
-      }
-
+      if (!supabaseClient) { alert("Community unavailable."); return; }
       const fileInput = document.getElementById("post-image");
       const caption = document.getElementById("post-caption").value.trim();
       const btn = document.getElementById("post-btn");
       const status = document.getElementById("post-status");
-
-      if (!fileInput.files || !fileInput.files[0]) {
-        alert("Please select a photo first.");
-        return;
-      }
-
+      if (!fileInput.files || !fileInput.files[0]) { alert("Select a photo first."); return; }
       btn.disabled = true;
       btn.innerText = "Uploading...";
       status.classList.remove("hidden");
-      status.innerText = "Uploading image...";
-
+      status.innerText = "Uploading...";
       try {
         const file = fileInput.files[0];
         const fileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-
-        const { error: uploadError } = await supabaseClient.storage
-          .from("gains")
-          .upload(fileName, file);
-
+        const { error: uploadError } = await supabaseClient.storage.from("gains").upload(fileName, file);
         if (uploadError) throw uploadError;
-
         const { data: urlData } = supabaseClient.storage.from("gains").getPublicUrl(fileName);
-        const imageUrl = urlData.publicUrl;
-
         const { error: insertError } = await supabaseClient.from("posts").insert({
           user_name: (user && user.name) ? user.name : "Athlete",
           caption: caption || null,
-          image_url: imageUrl,
+          image_url: urlData.publicUrl,
           likes: 0
         });
-
         if (insertError) throw insertError;
-
-        status.innerText = "Posted successfully!";
+        status.innerText = "Posted!";
         status.classList.add("text-green-400");
         fileInput.value = "";
         document.getElementById("post-caption").value = "";
         loadCommunityFeed();
       } catch (err) {
         console.error(err);
-        status.innerText = "Error: " + (err.message || "Upload failed");
+        status.innerText = "Error: " + (err.message || "Failed");
         status.classList.add("text-red-400");
       }
-
       btn.disabled = false;
       btn.innerText = "Share Post";
-      setTimeout(function() {
-        status.classList.add("hidden");
-        status.classList.remove("text-green-400", "text-red-400");
-      }, 3000);
+      setTimeout(function(){ status.classList.add("hidden"); status.classList.remove("text-green-400","text-red-400"); }, 3000);
     }
 
     async function likePost(postId, currentLikes) {
@@ -600,156 +948,7 @@
       try {
         await supabaseClient.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
         loadCommunityFeed();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // ==================== WORKOUT ====================
-    function loadDayCounts(day) {
-      try {
-        const saved = JSON.parse(localStorage.getItem("dayCounts_" + day));
-        dayCounts = saved ? { pushups: saved.pushups||0, situps: saved.situps||0, squats: saved.squats||0 } : { pushups:0, situps:0, squats:0 };
-      } catch(e) { dayCounts = { pushups:0, situps:0, squats:0 }; }
-    }
-    function saveDayCounts(day) {
-      localStorage.setItem("dayCounts_" + day, JSON.stringify(dayCounts));
-    }
-    function updateCircuitProgress() {
-      const total = dayCounts.pushups + dayCounts.situps + dayCounts.squats;
-      const pct = Math.min(100, Math.round((total / (TARGET*3)) * 100));
-      document.getElementById("circuit-percent").innerText = pct + "%";
-      document.getElementById("circuit-bar").style.width = pct + "%";
-      const btn = document.getElementById("complete-btn");
-      const allDone = dayCounts.pushups >= TARGET && dayCounts.situps >= TARGET && dayCounts.squats >= TARGET;
-      btn.disabled = !allDone;
-      if (allDone) {
-        btn.innerText = "COMPLETE WORKOUT ✓";
-        btn.classList.remove("bg-accent"); btn.classList.add("bg-green-600");
-      } else {
-        btn.innerText = "COMPLETE WORKOUT";
-        btn.classList.add("bg-accent"); btn.classList.remove("bg-green-600");
-      }
-    }
-    function changeCount(exercise, delta) {
-      dayCounts[exercise] = Math.max(0, Math.min(TARGET, dayCounts[exercise] + delta));
-      saveDayCounts(currentDay);
-      renderCounters();
-      updateCircuitProgress();
-    }
-    function setCount(exercise, value) {
-      const num = parseInt(value, 10);
-      if (isNaN(num)) return;
-      dayCounts[exercise] = Math.max(0, Math.min(TARGET, num));
-      saveDayCounts(currentDay);
-      renderCounters();
-      updateCircuitProgress();
-    }
-    function renderCounters() {
-      const list = document.getElementById("exercise-list");
-      const items = [
-        { key: "pushups", name: "Push-ups", icon: "💪" },
-        { key: "situps", name: "Sit-ups", icon: "🔥" },
-        { key: "squats", name: "Squats", icon: "🦵" }
-      ];
-      list.innerHTML = items.map(function(item) {
-        const count = dayCounts[item.key];
-        const done = count >= TARGET;
-        return `
-          <div class="bg-card p-4 rounded-xl border ${done ? 'border-accent' : 'border-zinc-800'}">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center space-x-2">
-                <span class="text-lg">${item.icon}</span>
-                <h4 class="font-bold">${item.name}</h4>
-              </div>
-              <span class="text-xs font-bold ${done ? 'text-accent' : 'text-zinc-500'}">${count} / ${TARGET}</span>
-            </div>
-            <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
-              <div class="h-full bg-accent transition-all duration-200" style="width:${(count/TARGET)*100}%"></div>
-            </div>
-            <div class="flex items-center justify-between space-x-2">
-              <button onclick="changeCount('${item.key}', -10)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">-10</button>
-              <button onclick="changeCount('${item.key}', -1)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-xl active:scale-95 transition">−</button>
-              <input type="number" min="0" max="100" value="${count}" onchange="setCount('${item.key}', this.value)"
-                     class="w-16 h-12 text-center bg-zinc-900 border border-zinc-700 rounded-xl font-black text-lg text-white focus:outline-none focus:border-accent">
-              <button onclick="changeCount('${item.key}', 1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">+</button>
-              <button onclick="changeCount('${item.key}', 10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">+10</button>
-            </div>
-          </div>`;
-      }).join("");
-    }
-    function renderWorkout(day) {
-      currentDay = day;
-      const workout = WORKOUTS[day] || WORKOUTS[1];
-      document.getElementById("workout-title").innerText = workout.title;
-      document.getElementById("workout-focus").innerText = workout.focus;
-      loadDayCounts(day);
-      renderCounters();
-      updateCircuitProgress();
-    }
-    function completeWorkout() {
-      if (dayCounts.pushups < TARGET || dayCounts.situps < TARGET || dayCounts.squats < TARGET) {
-        alert("Finish all 100 of each exercise first!");
-        return;
-      }
-      if (completedDays.indexOf(currentDay) === -1) {
-        completedDays.push(currentDay);
-        completedDays.sort(function(a,b){return a-b;});
-        localStorage.setItem("completedDays", JSON.stringify(completedDays));
-      }
-      updateAllStats();
-      document.getElementById("complete-btn").innerText = "DONE ✓";
-      setTimeout(function(){ switchScreen("home"); }, 800);
-    }
-
-    // ==================== PROGRAM / STATS ====================
-    function renderProgramGrid() {
-      const grid = document.getElementById("program-grid");
-      grid.innerHTML = "";
-      for (let d = 1; d <= 30; d++) {
-        const isCompleted = completedDays.indexOf(d) !== -1;
-        const isCurrent = d === currentDay;
-        const btn = document.createElement("button");
-        btn.className = "aspect-square rounded-xl font-bold text-sm flex items-center justify-center active:scale-95 transition " +
-          (isCompleted ? "bg-accent text-black" : isCurrent ? "border-2 border-accent text-accent" : "bg-card border border-zinc-800 text-zinc-400");
-        btn.innerText = d;
-        btn.onclick = (function(day){ return function(){ currentDay = day; switchScreen("today"); }; })(d);
-        grid.appendChild(btn);
-      }
-    }
-    function renderStats() {
-      document.getElementById("stats-workouts").innerText = completedDays.length;
-      document.getElementById("stats-streak").innerText = completedDays.length;
-      document.getElementById("stats-volume").innerText = (completedDays.length * 300).toLocaleString() + " reps";
-      const history = document.getElementById("stats-history");
-      if (completedDays.length === 0) {
-        history.innerHTML = '<p class="text-center py-4 text-zinc-500">No workouts completed yet</p>';
-      } else {
-        history.innerHTML = completedDays.slice().reverse().slice(0,8).map(function(d){
-          return '<div class="flex justify-between items-center py-2 border-b border-zinc-800"><span>Day '+d+' completed</span><span class="text-accent">✓</span></div>';
-        }).join("");
-      }
-    }
-    function updateAllStats() {
-      const total = completedDays.length;
-      const pct = Math.round((total/30)*100);
-      document.getElementById("home-progress-text").innerText = total + " / 30 DAYS";
-      document.getElementById("home-progress-percent").innerText = pct + "%";
-      document.getElementById("home-streak-text").innerText = "Current Streak: " + total + " Days 🔥";
-      const nextDay = total + 1 > 30 ? 30 : total + 1;
-      currentDay = nextDay;
-      if (WORKOUTS[nextDay]) document.getElementById("today-summary").innerText = WORKOUTS[nextDay].title;
-    }
-    function resetData() {
-      if (confirm("Reset all 30-day progress?")) {
-        completedDays = [];
-        localStorage.setItem("completedDays", JSON.stringify([]));
-        for (let i=1;i<=30;i++) localStorage.removeItem("dayCounts_"+i);
-        currentDay = 1;
-        updateAllStats();
-        alert("Progress reset.");
-        switchScreen("home");
-      }
+      } catch (err) { console.error(err); }
     }
 
     if ("serviceWorker" in navigator) {
