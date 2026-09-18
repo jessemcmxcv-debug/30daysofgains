@@ -13,7 +13,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -21,7 +21,6 @@
       --card: #262626;
       --accent: #FF6600;
     }
-    
     body {
       background-color: var(--bg);
       color: #FFFFFF;
@@ -30,25 +29,16 @@
       overscroll-behavior: none;
       margin: 0;
     }
-    
     .bg-card { background-color: var(--card); }
     .bg-accent { background-color: var(--accent); }
     .text-accent { color: var(--accent); }
     .border-accent { border-color: var(--accent); }
-    
-    .splash-logo {
-      animation: pulse 2s ease-in-out infinite;
-    }
-    
+    .splash-logo { animation: pulse 2s ease-in-out infinite; }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.05); opacity: 0.9; }
     }
-    
-    .fade-in {
-      animation: fadeIn 0.4s ease-out forwards;
-    }
-    
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -57,7 +47,7 @@
 </head>
 <body class="min-h-screen">
 
-  <!-- ==================== SPLASH SCREEN ==================== -->
+  <!-- SPLASH -->
   <div id="screen-splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center" style="background:#181818;">
     <div class="splash-logo flex flex-col items-center">
       <img src="logo.png" alt="30 Days of Gains" class="w-32 h-32 object-contain mb-6 rounded-full shadow-lg shadow-orange-500/30"
@@ -68,14 +58,13 @@
       <h1 class="text-3xl font-black tracking-tight">30 DAYS OF GAINS</h1>
       <p class="text-zinc-500 text-sm mt-2 tracking-widest uppercase">Build. Progress. Dominate.</p>
     </div>
-    
     <div class="absolute bottom-16 flex flex-col items-center">
       <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3"></div>
       <p class="text-zinc-600 text-xs">Loading...</p>
     </div>
   </div>
 
-  <!-- ==================== AUTH SCREEN ==================== -->
+  <!-- AUTH -->
   <section id="screen-auth" class="hidden min-h-screen flex flex-col">
     <header class="p-4 bg-card border-b border-zinc-800 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -88,28 +77,22 @@
         </div>
       </div>
     </header>
-
     <div class="flex-1 flex items-center justify-center p-6">
       <div class="w-full max-w-md bg-card rounded-2xl border border-zinc-800 p-8 space-y-6 fade-in">
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-black">WELCOME BACK</h2>
           <p class="text-sm text-zinc-400">Sign in to sync your 30-day gains across all devices</p>
         </div>
-
         <div class="space-y-3">
-          <!-- Google Login Button -->
           <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
             <i data-lucide="chrome" class="w-5 h-5"></i>
             <span>Continue with Google</span>
           </button>
-
           <div class="relative flex py-3 items-center">
             <div class="flex-grow border-t border-zinc-800"></div>
             <span class="flex-shrink mx-4 text-xs text-zinc-500 uppercase tracking-wider">Or</span>
             <div class="flex-grow border-t border-zinc-800"></div>
           </div>
-
-          <!-- Guest Login Button -->
           <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2 active:scale-[0.98] transition">
             <span>Continue as Guest</span>
             <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -119,7 +102,7 @@
     </div>
   </section>
 
-  <!-- ==================== WELCOME OVERLAY ==================== -->
+  <!-- WELCOME OVERLAY -->
   <div id="welcome-overlay" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center p-6">
     <div class="bg-card border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl fade-in">
       <div class="w-16 h-16 mx-auto rounded-full bg-accent/20 flex items-center justify-center">
@@ -137,9 +120,8 @@
     </div>
   </div>
 
-  <!-- ==================== MAIN APP ==================== -->
+  <!-- MAIN APP -->
   <div id="app-shell" class="hidden min-h-screen flex flex-col">
-    
     <header class="p-4 bg-card border-b border-zinc-800 flex justify-between items-center sticky top-0 z-30">
       <div class="flex items-center space-x-3">
         <img src="logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-full"
@@ -176,6 +158,14 @@
           <i data-lucide="dumbbell" class="text-accent w-8 h-8"></i>
         </button>
 
+        <button onclick="switchScreen('community')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
+          <div>
+            <h4 class="text-lg font-bold">Community</h4>
+            <p class="text-xs text-zinc-400">Share gains & motivate each other</p>
+          </div>
+          <i data-lucide="users" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+
         <button onclick="switchScreen('program')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
           <div>
             <h4 class="text-lg font-bold">30-Day Program Grid</h4>
@@ -202,13 +192,42 @@
       </div>
     </section>
 
+    <!-- COMMUNITY -->
+    <section id="screen-community" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        <span>BACK TO HOME</span>
+      </button>
+
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <h2 class="text-lg font-black mb-1">Community</h2>
+        <p class="text-xs text-zinc-400">Share your gains and motivate each other</p>
+      </div>
+
+      <!-- Create Post -->
+      <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
+        <h3 class="font-bold text-sm">Post Your Gains</h3>
+        <input type="file" id="post-image" accept="image/*" class="w-full text-sm text-zinc-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-black file:font-bold">
+        <textarea id="post-caption" rows="2" placeholder="Write a caption... (e.g. Day 12 done 💪)" 
+                  class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-accent resize-none"></textarea>
+        <button onclick="createPost()" id="post-btn" class="w-full py-3 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
+          Share Post
+        </button>
+        <p id="post-status" class="text-xs text-center text-zinc-500 hidden"></p>
+      </div>
+
+      <!-- Feed -->
+      <div id="community-feed" class="space-y-4">
+        <p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>
+      </div>
+    </section>
+
     <!-- TODAY -->
     <section id="screen-today" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
-      
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
         <div class="flex justify-between items-start">
           <div>
@@ -226,12 +245,9 @@
           </div>
         </div>
       </div>
-
       <div class="space-y-3" id="exercise-list"></div>
-
       <button onclick="completeWorkout()" id="complete-btn" 
-              class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none"
-              disabled>
+              class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none" disabled>
         COMPLETE WORKOUT
       </button>
     </section>
@@ -242,12 +258,10 @@
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
-
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
         <h2 class="text-lg font-black mb-1">30-Day Program</h2>
         <p class="text-xs text-zinc-400">Tap any day to view the workout</p>
       </div>
-
       <div class="grid grid-cols-5 gap-2" id="program-grid"></div>
     </section>
 
@@ -257,12 +271,10 @@
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
-
       <div class="bg-card p-5 rounded-xl border border-zinc-800 text-center">
         <p class="text-xs text-accent font-bold uppercase tracking-wider mb-1">Total Reps</p>
         <p class="text-3xl font-black" id="stats-volume">0 reps</p>
       </div>
-
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
           <p class="text-xs text-zinc-400 mb-1">Workouts</p>
@@ -273,7 +285,6 @@
           <p class="text-2xl font-black" id="stats-streak">0</p>
         </div>
       </div>
-
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
         <h3 class="font-bold mb-3">Recent Activity</h3>
         <div id="stats-history" class="space-y-2 text-sm text-zinc-400">
@@ -288,7 +299,6 @@
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
-
       <div class="bg-card p-6 rounded-2xl border border-zinc-800 text-center space-y-4">
         <img src="logo.png" alt="Logo" class="w-20 h-20 mx-auto object-contain rounded-full"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -297,10 +307,9 @@
         </div>
         <div>
           <h2 class="text-2xl font-black">30 DAYS OF GAINS</h2>
-          <p class="text-zinc-400 text-sm mt-1">Version 1.0.0</p>
+          <p class="text-zinc-400 text-sm mt-1">Version 1.1.0</p>
         </div>
       </div>
-
       <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
         <h3 class="font-bold text-accent">About the Program</h3>
         <p class="text-sm text-zinc-300 leading-relaxed">
@@ -309,34 +318,16 @@
         </p>
         <p class="text-sm text-zinc-300 leading-relaxed">
           Break the reps into as many sets as you need. Consistency beats perfection.
-          Show up for 30 days and build real discipline + strength.
         </p>
       </div>
-
       <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-3">
         <h3 class="font-bold text-accent">Features</h3>
         <ul class="text-sm text-zinc-300 space-y-2">
-          <li class="flex items-start space-x-2">
-            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
-            <span>100 Push-ups + 100 Sit-ups + 100 Squats daily</span>
-          </li>
-          <li class="flex items-start space-x-2">
-            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
-            <span>Progress & streak tracking</span>
-          </li>
-          <li class="flex items-start space-x-2">
-            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
-            <span>Works offline as a PWA</span>
-          </li>
-          <li class="flex items-start space-x-2">
-            <i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i>
-            <span>Google login + Guest mode</span>
-          </li>
+          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>100 Push-ups + 100 Sit-ups + 100 Squats daily</span></li>
+          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Progress & streak tracking</span></li>
+          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Community – share gains & motivate others</span></li>
+          <li class="flex items-start space-x-2"><i data-lucide="check" class="w-4 h-4 text-accent mt-0.5 flex-shrink-0"></i><span>Works offline as a PWA</span></li>
         </ul>
-      </div>
-
-      <div class="text-center text-xs text-zinc-600 pt-2">
-        Built for athletes who show up every day.
       </div>
     </section>
 
@@ -346,7 +337,6 @@
         <i data-lucide="chevron-left" class="w-4 h-4"></i>
         <span>BACK TO HOME</span>
       </button>
-
       <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
         <h2 class="text-lg font-bold">App Settings</h2>
         <div class="pt-2 space-y-3">
@@ -362,99 +352,43 @@
   </div>
 
   <script>
-    // ==================== GOOGLE SIGN-IN ====================
-    const GOOGLE_CLIENT_ID = "609767066962-0ptvmfuhhmvlmphfnf31l7v1kkjqsp7a.apps.googleusercontent.com";
+    // ==================== SUPABASE ====================
+    const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHFubmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA0NzM0MzQsImV4cCI6MjA0NjA0OTQzNH0.idCoawoxIpvaSl8ziVKqKP1QQzjWQBods8kTz03eCc4";
 
-    function handleGoogleCredential(response) {
-      try {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        
-        user = {
-          name: payload.name || payload.given_name || "Google Athlete",
-          email: payload.email,
-          picture: payload.picture,
-          provider: "google",
-          googleId: payload.sub
-        };
-
-        localStorage.setItem("user", JSON.stringify(user));
-        document.getElementById("user-status").innerText = user.name;
-
-        document.getElementById("screen-auth").classList.add("hidden");
-        
-        document.getElementById("welcome-title").innerText = "Welcome, " + (user.name.split(" ")[0] || "Athlete") + "!";
-        document.getElementById("welcome-message").innerText = 
-          "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
-        
-        document.getElementById("welcome-overlay").classList.remove("hidden");
-        safeIcons();
-      } catch (e) {
-        console.error("Google login error:", e);
-        alert("Google login failed. Please try again.");
-      }
-    }
-
-    function initGoogleSignIn() {
-      if (typeof google === "undefined" || !google.accounts) {
-        setTimeout(initGoogleSignIn, 500);
-        return;
-      }
-
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredential,
-        auto_select: false
-      });
-
-      const btn = document.getElementById("google-btn");
-      if (btn) {
-        btn.onclick = function () {
-          google.accounts.id.prompt();
-        };
-      }
-    }
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ==================== DATA ====================
     const DAILY_CIRCUIT = {
       title: "Daily Circuit",
       focus: "100 Push-ups • 100 Sit-ups • 100 Squats",
       exercises: [
-        { name: "Push-ups", sets: "100 total", notes: "Break into sets as needed (e.g. 10×10)" },
+        { name: "Push-ups", sets: "100 total", notes: "Break into sets as needed" },
         { name: "Sit-ups", sets: "100 total", notes: "Break into sets as needed" },
         { name: "Squats", sets: "100 total", notes: "Bodyweight. Full depth." }
       ]
     };
-
     const WORKOUTS = {};
     for (let d = 1; d <= 30; d++) {
-      WORKOUTS[d] = {
-        title: "Day " + d + ": Daily Circuit",
-        focus: DAILY_CIRCUIT.focus,
-        exercises: DAILY_CIRCUIT.exercises
-      };
+      WORKOUTS[d] = { title: "Day " + d + ": Daily Circuit", focus: DAILY_CIRCUIT.focus, exercises: DAILY_CIRCUIT.exercises };
     }
 
-    // ==================== STATE ====================
     let user = null;
     try { user = JSON.parse(localStorage.getItem("user")); } catch(e) {}
     let completedDays = [];
     try { completedDays = JSON.parse(localStorage.getItem("completedDays")) || []; } catch(e) {}
     let currentDay = 1;
+    let dayCounts = { pushups: 0, situps: 0, squats: 0 };
+    const TARGET = 100;
 
-    // ==================== SAFE ICON HELPER ====================
     function safeIcons() {
-      try {
-        if (window.lucide && typeof lucide.createIcons === "function") {
-          lucide.createIcons();
-        }
-      } catch (e) {}
+      try { if (window.lucide) lucide.createIcons(); } catch(e) {}
     }
 
     // ==================== CORE FLOW ====================
     function hideSplash() {
       const splash = document.getElementById("screen-splash");
       if (splash) splash.style.display = "none";
-
       if (user) {
         document.getElementById("user-status").innerText = user.name || "Athlete";
         document.getElementById("app-shell").classList.remove("hidden");
@@ -469,72 +403,48 @@
     function init() {
       setTimeout(hideSplash, 5000);
       safeIcons();
-      // Start Google Sign-In
-      setTimeout(initGoogleSignIn, 800);
     }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
-
-    // Safety net
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else init();
     setTimeout(function() {
       const splash = document.getElementById("screen-splash");
-      if (splash && splash.style.display !== "none") {
-        hideSplash();
-      }
+      if (splash && splash.style.display !== "none") hideSplash();
     }, 5500);
 
-    // ==================== NAVIGATION ====================
     function switchScreen(screen) {
-      ["home", "today", "program", "stats", "about", "settings"].forEach(function(s) {
+      ["home","today","program","stats","about","settings","community"].forEach(function(s) {
         const el = document.getElementById("screen-" + s);
         if (el) el.classList.add("hidden");
       });
-
       const target = document.getElementById("screen-" + screen);
       if (target) {
         target.classList.remove("hidden");
         target.classList.add("fade-in");
       }
-
       if (screen === "today") renderWorkout(currentDay);
       if (screen === "program") renderProgramGrid();
       if (screen === "stats") renderStats();
-
+      if (screen === "community") loadCommunityFeed();
       safeIcons();
     }
 
     // ==================== AUTH ====================
     function login(provider) {
-      // Only used for Guest now
-      const names = {
-        guest: "Guest Athlete"
-      };
-
-      user = { name: names[provider] || "Athlete", provider: provider };
+      user = { name: provider === "guest" ? "Guest Athlete" : "Athlete", provider: provider };
       localStorage.setItem("user", JSON.stringify(user));
       document.getElementById("user-status").innerText = user.name;
-
       document.getElementById("screen-auth").classList.add("hidden");
-
       document.getElementById("welcome-title").innerText = "Welcome, " + user.name.split(" ")[0] + "!";
-      document.getElementById("welcome-message").innerText =
-        "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
-
+      document.getElementById("welcome-message").innerText = "You're all set. Ready to crush the next 30 days and build some serious gains? Let's get after it.";
       document.getElementById("welcome-overlay").classList.remove("hidden");
       safeIcons();
     }
-
     function dismissWelcome() {
       document.getElementById("welcome-overlay").classList.add("hidden");
       document.getElementById("app-shell").classList.remove("hidden");
       switchScreen("home");
       updateAllStats();
     }
-
     function logout() {
       localStorage.removeItem("user");
       user = null;
@@ -542,61 +452,154 @@
       document.getElementById("screen-auth").classList.remove("hidden");
     }
 
-    // ==================== WORKOUT COUNTERS ====================
-    let dayCounts = { pushups: 0, situps: 0, squats: 0 };
-    const TARGET = 100;
+    // ==================== COMMUNITY ====================
+    async function loadCommunityFeed() {
+      const feed = document.getElementById("community-feed");
+      feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>';
 
+      try {
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">No posts yet. Be the first to share your gains!</p>';
+          return;
+        }
+
+        feed.innerHTML = data.map(function(post) {
+          const date = post.created_at ? new Date(post.created_at).toLocaleDateString() : "";
+          return `
+            <div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
+              ${post.image_url ? `<img src="${post.image_url}" alt="Gains" class="w-full max-h-80 object-cover">` : ""}
+              <div class="p-4 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm">${post.user_name || "Athlete"}</span>
+                  <span class="text-xs text-zinc-500">${date}</span>
+                </div>
+                ${post.caption ? `<p class="text-sm text-zinc-300">${post.caption}</p>` : ""}
+                <div class="flex items-center space-x-4 pt-1">
+                  <button onclick="likePost('${post.id}', ${post.likes || 0})" class="flex items-center space-x-1 text-sm text-zinc-400 hover:text-accent">
+                    <i data-lucide="heart" class="w-4 h-4"></i>
+                    <span>${post.likes || 0}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+        safeIcons();
+      } catch (err) {
+        console.error(err);
+        feed.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load posts. Check console.</p>';
+      }
+    }
+
+    async function createPost() {
+      const fileInput = document.getElementById("post-image");
+      const caption = document.getElementById("post-caption").value.trim();
+      const btn = document.getElementById("post-btn");
+      const status = document.getElementById("post-status");
+
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert("Please select a photo first.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Uploading...";
+      status.classList.remove("hidden");
+      status.innerText = "Uploading image...";
+
+      try {
+        const file = fileInput.files[0];
+        const fileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+
+        // Upload image
+        const { error: uploadError } = await supabase.storage
+          .from("gains")
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage.from("gains").getPublicUrl(fileName);
+        const imageUrl = urlData.publicUrl;
+
+        // Insert post
+        const { error: insertError } = await supabase.from("posts").insert({
+          user_name: (user && user.name) ? user.name : "Athlete",
+          caption: caption || null,
+          image_url: imageUrl,
+          likes: 0
+        });
+
+        if (insertError) throw insertError;
+
+        status.innerText = "Posted successfully!";
+        status.classList.add("text-green-400");
+        fileInput.value = "";
+        document.getElementById("post-caption").value = "";
+        loadCommunityFeed();
+      } catch (err) {
+        console.error(err);
+        status.innerText = "Error: " + (err.message || "Upload failed");
+        status.classList.add("text-red-400");
+      }
+
+      btn.disabled = false;
+      btn.innerText = "Share Post";
+      setTimeout(function() {
+        status.classList.add("hidden");
+        status.classList.remove("text-green-400", "text-red-400");
+      }, 3000);
+    }
+
+    async function likePost(postId, currentLikes) {
+      try {
+        await supabase.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
+        loadCommunityFeed();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ==================== WORKOUT ====================
     function loadDayCounts(day) {
       try {
         const saved = JSON.parse(localStorage.getItem("dayCounts_" + day));
-        if (saved) {
-          dayCounts = {
-            pushups: saved.pushups || 0,
-            situps: saved.situps || 0,
-            squats: saved.squats || 0
-          };
-        } else {
-          dayCounts = { pushups: 0, situps: 0, squats: 0 };
-        }
-      } catch (e) {
-        dayCounts = { pushups: 0, situps: 0, squats: 0 };
-      }
+        dayCounts = saved ? { pushups: saved.pushups||0, situps: saved.situps||0, squats: saved.squats||0 } : { pushups:0, situps:0, squats:0 };
+      } catch(e) { dayCounts = { pushups:0, situps:0, squats:0 }; }
     }
-
     function saveDayCounts(day) {
       localStorage.setItem("dayCounts_" + day, JSON.stringify(dayCounts));
     }
-
     function updateCircuitProgress() {
       const total = dayCounts.pushups + dayCounts.situps + dayCounts.squats;
-      const max = TARGET * 3;
-      const pct = Math.min(100, Math.round((total / max) * 100));
-
+      const pct = Math.min(100, Math.round((total / (TARGET*3)) * 100));
       document.getElementById("circuit-percent").innerText = pct + "%";
       document.getElementById("circuit-bar").style.width = pct + "%";
-
       const btn = document.getElementById("complete-btn");
       const allDone = dayCounts.pushups >= TARGET && dayCounts.situps >= TARGET && dayCounts.squats >= TARGET;
       btn.disabled = !allDone;
-
       if (allDone) {
         btn.innerText = "COMPLETE WORKOUT ✓";
-        btn.classList.remove("bg-accent");
-        btn.classList.add("bg-green-600");
+        btn.classList.remove("bg-accent"); btn.classList.add("bg-green-600");
       } else {
         btn.innerText = "COMPLETE WORKOUT";
-        btn.classList.add("bg-accent");
-        btn.classList.remove("bg-green-600");
+        btn.classList.add("bg-accent"); btn.classList.remove("bg-green-600");
       }
     }
-
     function changeCount(exercise, delta) {
       dayCounts[exercise] = Math.max(0, Math.min(TARGET, dayCounts[exercise] + delta));
       saveDayCounts(currentDay);
       renderCounters();
       updateCircuitProgress();
     }
-
     function setCount(exercise, value) {
       const num = parseInt(value, 10);
       if (isNaN(num)) return;
@@ -605,7 +608,6 @@
       renderCounters();
       updateCircuitProgress();
     }
-
     function renderCounters() {
       const list = document.getElementById("exercise-list");
       const items = [
@@ -613,7 +615,6 @@
         { key: "situps", name: "Sit-ups", icon: "🔥" },
         { key: "squats", name: "Squats", icon: "🦵" }
       ];
-
       list.innerHTML = items.map(function(item) {
         const count = dayCounts[item.key];
         const done = count >= TARGET;
@@ -624,12 +625,10 @@
                 <span class="text-lg">${item.icon}</span>
                 <h4 class="font-bold">${item.name}</h4>
               </div>
-              <span class="text-xs font-bold ${done ? 'text-accent' : 'text-zinc-500'}">
-                ${count} / ${TARGET}
-              </span>
+              <span class="text-xs font-bold ${done ? 'text-accent' : 'text-zinc-500'}">${count} / ${TARGET}</span>
             </div>
             <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
-              <div class="h-full bg-accent transition-all duration-200" style="width:${(count / TARGET) * 100}%"></div>
+              <div class="h-full bg-accent transition-all duration-200" style="width:${(count/TARGET)*100}%"></div>
             </div>
             <div class="flex items-center justify-between space-x-2">
               <button onclick="changeCount('${item.key}', -10)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">-10</button>
@@ -639,122 +638,85 @@
               <button onclick="changeCount('${item.key}', 1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">+</button>
               <button onclick="changeCount('${item.key}', 10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">+10</button>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join("");
     }
-
     function renderWorkout(day) {
       currentDay = day;
       const workout = WORKOUTS[day] || WORKOUTS[1];
-
       document.getElementById("workout-title").innerText = workout.title;
       document.getElementById("workout-focus").innerText = workout.focus;
-
       loadDayCounts(day);
       renderCounters();
       updateCircuitProgress();
     }
-
     function completeWorkout() {
       if (dayCounts.pushups < TARGET || dayCounts.situps < TARGET || dayCounts.squats < TARGET) {
         alert("Finish all 100 of each exercise first!");
         return;
       }
-
       if (completedDays.indexOf(currentDay) === -1) {
         completedDays.push(currentDay);
-        completedDays.sort(function(a, b) { return a - b; });
+        completedDays.sort(function(a,b){return a-b;});
         localStorage.setItem("completedDays", JSON.stringify(completedDays));
       }
-
       updateAllStats();
-
-      const btn = document.getElementById("complete-btn");
-      btn.innerText = "DONE ✓";
-      btn.style.background = "#16a34a";
-
-      setTimeout(function() {
-        switchScreen("home");
-      }, 800);
+      document.getElementById("complete-btn").innerText = "DONE ✓";
+      setTimeout(function(){ switchScreen("home"); }, 800);
     }
 
-    // ==================== PROGRAM GRID ====================
+    // ==================== PROGRAM / STATS ====================
     function renderProgramGrid() {
       const grid = document.getElementById("program-grid");
       grid.innerHTML = "";
-
       for (let d = 1; d <= 30; d++) {
         const isCompleted = completedDays.indexOf(d) !== -1;
         const isCurrent = d === currentDay;
-
         const btn = document.createElement("button");
         btn.className = "aspect-square rounded-xl font-bold text-sm flex items-center justify-center active:scale-95 transition " +
-          (isCompleted ? "bg-accent text-black" :
-           isCurrent ? "border-2 border-accent text-accent" :
-           "bg-card border border-zinc-800 text-zinc-400");
+          (isCompleted ? "bg-accent text-black" : isCurrent ? "border-2 border-accent text-accent" : "bg-card border border-zinc-800 text-zinc-400");
         btn.innerText = d;
-        btn.onclick = (function(day) {
-          return function() {
-            currentDay = day;
-            switchScreen("today");
-          };
-        })(d);
+        btn.onclick = (function(day){ return function(){ currentDay = day; switchScreen("today"); }; })(d);
         grid.appendChild(btn);
       }
     }
-
-    // ==================== STATS ====================
     function renderStats() {
       document.getElementById("stats-workouts").innerText = completedDays.length;
       document.getElementById("stats-streak").innerText = completedDays.length;
       document.getElementById("stats-volume").innerText = (completedDays.length * 300).toLocaleString() + " reps";
-
       const history = document.getElementById("stats-history");
       if (completedDays.length === 0) {
         history.innerHTML = '<p class="text-center py-4 text-zinc-500">No workouts completed yet</p>';
       } else {
-        history.innerHTML = completedDays.slice().reverse().slice(0, 8).map(function(d) {
-          return '<div class="flex justify-between items-center py-2 border-b border-zinc-800">' +
-            '<span>Day ' + d + ' completed</span>' +
-            '<span class="text-accent">✓</span></div>';
+        history.innerHTML = completedDays.slice().reverse().slice(0,8).map(function(d){
+          return '<div class="flex justify-between items-center py-2 border-b border-zinc-800"><span>Day '+d+' completed</span><span class="text-accent">✓</span></div>';
         }).join("");
       }
     }
-
     function updateAllStats() {
       const total = completedDays.length;
-      const pct = Math.round((total / 30) * 100);
-
+      const pct = Math.round((total/30)*100);
       document.getElementById("home-progress-text").innerText = total + " / 30 DAYS";
       document.getElementById("home-progress-percent").innerText = pct + "%";
       document.getElementById("home-streak-text").innerText = "Current Streak: " + total + " Days 🔥";
-
       const nextDay = total + 1 > 30 ? 30 : total + 1;
       currentDay = nextDay;
-      if (WORKOUTS[nextDay]) {
-        document.getElementById("today-summary").innerText = WORKOUTS[nextDay].title;
-      }
+      if (WORKOUTS[nextDay]) document.getElementById("today-summary").innerText = WORKOUTS[nextDay].title;
     }
-
     function resetData() {
-      if (confirm("Are you sure you want to reset all 30-day progress? This cannot be undone.")) {
+      if (confirm("Reset all 30-day progress?")) {
         completedDays = [];
-        localStorage.setItem("completedDays", JSON.stringify(completedDays));
-        // Also clear all day counters
-        for (let i = 1; i <= 30; i++) {
-          localStorage.removeItem("dayCounts_" + i);
-        }
+        localStorage.setItem("completedDays", JSON.stringify([]));
+        for (let i=1;i<=30;i++) localStorage.removeItem("dayCounts_"+i);
         currentDay = 1;
         updateAllStats();
-        alert("Progress has been reset.");
+        alert("Progress reset.");
         switchScreen("home");
       }
     }
 
-    // Service worker
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(function() {});
+      navigator.serviceWorker.register("/sw.js").catch(function(){});
     }
   </script>
 </body>
