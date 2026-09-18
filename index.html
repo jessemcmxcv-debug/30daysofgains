@@ -594,11 +594,12 @@
 
     // ==================== WORKOUT ====================
     function openTodayWorkout() {
+      // Always open with the program currently selected on Home
       viewingDate = todayStr();
-      openWorkoutForDate(viewingDate);
+      openWorkoutForDate(viewingDate, true);
     }
 
-    function openWorkoutForDate(dateStr) {
+    function openWorkoutForDate(dateStr, useSelectedProgram) {
       viewingDate = dateStr;
       const isToday = dateStr === todayStr();
       const isFuture = dateStr > todayStr();
@@ -608,17 +609,22 @@
         return;
       }
 
-      // If this day already has a program started, stick with it
       const entry = dayLog[dateStr];
-      if (entry && entry.program && PROGRAMS[entry.program]) {
+
+      // Today's Workout button → use selected program from Home.
+      // Calendar (past days) → keep the program that was used that day.
+      if (!useSelectedProgram && entry && entry.program && PROGRAMS[entry.program]) {
         activeProgram = entry.program;
-        localStorage.setItem("activeProgram", activeProgram);
       }
 
       const prog = PROGRAMS[activeProgram];
       dayCounts = {};
       prog.exercises.forEach(function(ex) {
-        dayCounts[ex.key] = (entry && entry.counts && entry.counts[ex.key]) ? entry.counts[ex.key] : 0;
+        if (entry && entry.program === activeProgram && entry.counts && entry.counts[ex.key]) {
+          dayCounts[ex.key] = entry.counts[ex.key];
+        } else {
+          dayCounts[ex.key] = 0;
+        }
       });
 
       document.getElementById("workout-program-label").innerText = prog.name;
@@ -626,7 +632,7 @@
       document.getElementById("workout-date").innerText = formatDateNice(dateStr);
 
       const lockMsg = document.getElementById("workout-lock-msg");
-      if (entry && entry.completed) {
+      if (entry && entry.completed && entry.program === activeProgram) {
         lockMsg.innerText = "Completed — you can still add extra reps.";
       } else {
         lockMsg.innerText = "Progress auto-saves. Come back anytime to finish.";
