@@ -352,11 +352,18 @@
   </div>
 
   <script>
-    // ==================== SUPABASE ====================
+    // ==================== SUPABASE (safe init) ====================
     const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHFubmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA0NzM0MzQsImV4cCI6MjA0NjA0OTQzNH0.idCoawoxIpvaSl8ziVKqKP1QQzjWQBods8kTz03eCc4";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase failed to load:", e);
+    }
 
     // ==================== DATA ====================
     const DAILY_CIRCUIT = {
@@ -385,31 +392,52 @@
       try { if (window.lucide) lucide.createIcons(); } catch(e) {}
     }
 
-    // ==================== CORE FLOW ====================
+    // ==================== CORE FLOW (emergency splash) ====================
     function hideSplash() {
-      const splash = document.getElementById("screen-splash");
-      if (splash) splash.style.display = "none";
-      if (user) {
-        document.getElementById("user-status").innerText = user.name || "Athlete";
-        document.getElementById("app-shell").classList.remove("hidden");
-        switchScreen("home");
-        updateAllStats();
-      } else {
-        document.getElementById("screen-auth").classList.remove("hidden");
+      try {
+        const splash = document.getElementById("screen-splash");
+        if (splash) {
+          splash.style.display = "none";
+          splash.style.visibility = "hidden";
+          splash.style.opacity = "0";
+        }
+        if (user) {
+          const status = document.getElementById("user-status");
+          if (status) status.innerText = user.name || "Athlete";
+          const shell = document.getElementById("app-shell");
+          if (shell) shell.classList.remove("hidden");
+          switchScreen("home");
+          updateAllStats();
+        } else {
+          const auth = document.getElementById("screen-auth");
+          if (auth) auth.classList.remove("hidden");
+        }
+        safeIcons();
+      } catch (e) {
+        console.error("hideSplash error:", e);
+        // Last resort – force hide splash
+        var s = document.getElementById("screen-splash");
+        if (s) s.style.display = "none";
+        var a = document.getElementById("screen-auth");
+        if (a) a.classList.remove("hidden");
       }
-      safeIcons();
     }
 
+    // Force hide splash at multiple times so it never stays stuck
+    setTimeout(hideSplash, 3000);
+    setTimeout(hideSplash, 5000);
+    setTimeout(hideSplash, 7000);
+
     function init() {
-      setTimeout(hideSplash, 5000);
       safeIcons();
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
     else init();
-    setTimeout(function() {
-      const splash = document.getElementById("screen-splash");
-      if (splash && splash.style.display !== "none") hideSplash();
-    }, 5500);
+
+    // Absolute safety net
+    window.addEventListener("load", function() {
+      setTimeout(hideSplash, 1000);
+    });
 
     function switchScreen(screen) {
       ["home","today","program","stats","about","settings","community"].forEach(function(s) {
@@ -455,7 +483,13 @@
     // ==================== COMMUNITY ====================
     async function loadCommunityFeed() {
       const feed = document.getElementById("community-feed");
+      if (!feed) return;
       feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>';
+
+      if (!supabase) {
+        feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Community temporarily unavailable.</p>';
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -495,11 +529,16 @@
         safeIcons();
       } catch (err) {
         console.error(err);
-        feed.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load posts. Check console.</p>';
+        feed.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load posts.</p>';
       }
     }
 
     async function createPost() {
+      if (!supabase) {
+        alert("Community is temporarily unavailable. Please try again later.");
+        return;
+      }
+
       const fileInput = document.getElementById("post-image");
       const caption = document.getElementById("post-caption").value.trim();
       const btn = document.getElementById("post-btn");
@@ -519,18 +558,15 @@
         const file = fileInput.files[0];
         const fileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g, "_");
 
-        // Upload image
         const { error: uploadError } = await supabase.storage
           .from("gains")
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        // Get public URL
         const { data: urlData } = supabase.storage.from("gains").getPublicUrl(fileName);
         const imageUrl = urlData.publicUrl;
 
-        // Insert post
         const { error: insertError } = await supabase.from("posts").insert({
           user_name: (user && user.name) ? user.name : "Athlete",
           caption: caption || null,
@@ -560,6 +596,7 @@
     }
 
     async function likePost(postId, currentLikes) {
+      if (!supabase) return;
       try {
         await supabase.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
         loadCommunityFeed();
