@@ -255,7 +255,10 @@
               disabled>
         COMPLETE WORKOUT
       </button>
-      <p class="text-center text-xs text-zinc-500" id="workout-lock-msg"></p>
+      <button onclick="saveAndExit()" class="w-full py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl text-sm active:scale-[0.98] transition">
+        Save & Finish Later
+      </button>
+      <p class="text-center text-xs text-zinc-500" id="workout-lock-msg">Progress auto-saves as you log reps</p>
     </section>
 
     <!-- CALENDAR -->
@@ -546,7 +549,16 @@
       }
 
       const prog = PROGRAMS[activeProgram];
-      document.getElementById("today-summary").innerText = prog.name + " · " + prog.exercises.map(function(e){ return e.target + " " + e.name.split(" ")[0]; }).join(" · ");
+      const today = todayStr();
+      const todayEntry = dayLog[today];
+      let summary = prog.name + " · " + prog.exercises.map(function(e){ return e.target + " " + e.name.split(" ")[0]; }).join(" · ");
+      if (todayEntry && todayEntry.completed) {
+        summary = "✓ Completed today — great work!";
+      } else if (todayEntry && todayEntry.counts) {
+        const hasProgress = Object.keys(todayEntry.counts).some(function(k){ return todayEntry.counts[k] > 0; });
+        if (hasProgress) summary = "In progress — tap to continue";
+      }
+      document.getElementById("today-summary").innerText = summary;
 
       // Month progress
       const now = new Date();
@@ -596,8 +608,13 @@
         return;
       }
 
-      // Load counts for this date
+      // If this day already has a program started, stick with it
       const entry = dayLog[dateStr];
+      if (entry && entry.program && PROGRAMS[entry.program]) {
+        activeProgram = entry.program;
+        localStorage.setItem("activeProgram", activeProgram);
+      }
+
       const prog = PROGRAMS[activeProgram];
       dayCounts = {};
       prog.exercises.forEach(function(ex) {
@@ -609,17 +626,21 @@
       document.getElementById("workout-date").innerText = formatDateNice(dateStr);
 
       const lockMsg = document.getElementById("workout-lock-msg");
-      if (!isToday && entry && entry.completed) {
-        lockMsg.innerText = "This day is already completed.";
-      } else if (!isToday) {
-        lockMsg.innerText = "Past day — you can still finish if needed.";
+      if (entry && entry.completed) {
+        lockMsg.innerText = "Completed — you can still add extra reps.";
       } else {
-        lockMsg.innerText = "";
+        lockMsg.innerText = "Progress auto-saves. Come back anytime to finish.";
       }
 
       renderCounters();
       updateCircuitProgress();
       switchScreen("today");
+    }
+
+    function saveAndExit() {
+      saveDayCounts();
+      switchScreen("home");
+      updateHomeUI();
     }
 
     function formatDateNice(dateStr) {
@@ -782,10 +803,16 @@
         const isToday = dateStr === today;
         const entry = dayLog[dateStr];
         const completed = entry && entry.completed;
+        const inProgress = entry && entry.counts && !completed &&
+          Object.keys(entry.counts).some(function(k){ return entry.counts[k] > 0; });
 
         if (isFuture) btn.classList.add("future");
         else if (completed) btn.classList.add("completed");
-        else btn.classList.add("past-empty");
+        else if (inProgress) {
+          btn.classList.add("past-empty");
+          btn.style.border = "1px solid #FF6600";
+          btn.style.color = "#FF6600";
+        } else btn.classList.add("past-empty");
         if (isToday) btn.classList.add("today");
 
         if (!isFuture) {
