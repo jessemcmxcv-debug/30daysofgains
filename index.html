@@ -4,75 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>30 DAYS OF GAINS</title>
-  
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FF6600">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="30GAINS">
   <meta name="mobile-web-app-capable" content="yes">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    :root {
-      --bg: #181818;
-      --card: #262626;
-      --accent: #FF6600;
-    }
-    body {
-      background-color: var(--bg);
-      color: #FFFFFF;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
-      margin: 0;
-    }
-    .bg-card { background-color: var(--card); }
-    .bg-accent { background-color: var(--accent); }
-    .text-accent { color: var(--accent); }
-    .border-accent { border-color: var(--accent); }
-    .splash-logo { animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.9; }
-    }
-    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .cal-day {
-      aspect-ratio: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-center;
-      border-radius: 0.75rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      transition: all 0.15s;
-    }
-    .cal-day.today { border: 2px solid #FF6600; }
-    .cal-day.completed { background: #FF6600; color: #000; }
-    .cal-day.future { opacity: 0.35; pointer-events: none; }
-    .cal-day.past-empty { background: #262626; border: 1px solid #3f3f46; }
-    .cal-day.selected { ring: 2px; box-shadow: 0 0 0 2px #FF6600; }
+    :root { --bg:#181818; --card:#262626; --accent:#FF6600; }
+    body { background:var(--bg); color:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; -webkit-tap-highlight-color:transparent; overscroll-behavior:none; margin:0; }
+    .bg-card{background:var(--card)} .bg-accent{background:var(--accent)} .text-accent{color:var(--accent)} .border-accent{border-color:var(--accent)}
+    .splash-logo{animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.9}}
+    .fade-in{animation:fadeIn .4s ease-out forwards}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:.75rem;font-size:.75rem;font-weight:700}
+    .cal-day.today{border:2px solid #FF6600} .cal-day.completed{background:#FF6600;color:#000}
+    .cal-day.future{opacity:.35;pointer-events:none} .cal-day.past-empty{background:#262626;border:1px solid #3f3f46}
+    #offline-banner{display:none} #offline-banner.show{display:flex}
+    .timer-ring{stroke-dasharray:283;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+    #app-shell section{padding-bottom:5.5rem}
+    #bottom-nav{padding-bottom:env(safe-area-inset-bottom,0px)}
   </style>
 </head>
 <body class="min-h-screen">
 
+  <!-- OFFLINE BANNER -->
+  <div id="offline-banner" class="fixed top-0 left-0 right-0 z-[60] bg-zinc-900 border-b border-zinc-700 text-xs text-center py-2 text-zinc-300">
+    You're offline — progress still saves on this device
+  </div>
+
   <!-- SPLASH -->
-  <div id="screen-splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center" style="background:#181818;">
+  <div id="screen-splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center" style="background:#181818">
     <div class="splash-logo flex flex-col items-center">
-      <img src="logo.png" alt="30 Days of Gains" class="w-32 h-32 object-contain mb-6 rounded-full shadow-lg shadow-orange-500/30"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <div class="w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6" style="display:none;">
-        <span class="text-5xl font-black text-black tracking-tighter">30</span>
+      <img src="logo.png" alt="Logo" class="w-32 h-32 object-contain mb-6 rounded-full shadow-lg shadow-orange-500/30"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6" style="display:none">
+        <span class="text-5xl font-black text-black">30</span>
       </div>
-      <h1 class="text-3xl font-black tracking-tight">30 DAYS OF GAINS</h1>
+      <h1 class="text-3xl font-black">30 DAYS OF GAINS</h1>
       <p class="text-zinc-500 text-sm mt-2 tracking-widest uppercase">Build. Progress. Dominate.</p>
     </div>
     <div class="absolute bottom-16 flex flex-col items-center">
@@ -81,38 +54,43 @@
     </div>
   </div>
 
+  <!-- ONBOARDING -->
+  <section id="screen-onboarding" class="hidden fixed inset-0 z-40 bg-[#181818] flex flex-col">
+    <div class="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
+      <div id="onboard-step" class="w-full text-center space-y-6 fade-in"></div>
+    </div>
+    <div class="p-6 max-w-md mx-auto w-full space-y-3">
+      <button onclick="onboardNext()" id="onboard-next" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl">Continue</button>
+      <button onclick="finishOnboarding()" class="w-full py-2 text-zinc-500 text-sm">Skip</button>
+    </div>
+  </section>
+
   <!-- AUTH -->
   <section id="screen-auth" class="hidden min-h-screen flex flex-col">
-    <header class="p-4 bg-card border-b border-zinc-800 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <img src="logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-full"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm" style="display:none;">30</div>
-        <div>
-          <h1 class="font-extrabold text-lg leading-none">30 DAYS OF GAINS</h1>
-          <p class="text-xs text-zinc-400">Guest Account</p>
-        </div>
+    <header class="p-4 bg-card border-b border-zinc-800 flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm">30</div>
+      <div>
+        <h1 class="font-extrabold text-lg leading-none">30 DAYS OF GAINS</h1>
+        <p class="text-xs text-zinc-400">Sign in</p>
       </div>
     </header>
     <div class="flex-1 flex items-center justify-center p-6">
       <div class="w-full max-w-md bg-card rounded-2xl border border-zinc-800 p-8 space-y-6 fade-in">
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-black">WELCOME BACK</h2>
-          <p class="text-sm text-zinc-400">Sign in to track your gains</p>
+          <p class="text-sm text-zinc-400">Track gains · stay consistent</p>
         </div>
         <div class="space-y-3">
-          <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3 active:scale-[0.98] transition">
-            <i data-lucide="chrome" class="w-5 h-5"></i>
-            <span>Continue with Google</span>
+          <button id="google-btn" class="w-full py-3.5 bg-white text-black font-bold rounded-xl flex items-center justify-center space-x-3">
+            <i data-lucide="chrome" class="w-5 h-5"></i><span>Continue with Google</span>
           </button>
-          <div class="relative flex py-3 items-center">
+          <div class="relative flex py-2 items-center">
             <div class="flex-grow border-t border-zinc-800"></div>
-            <span class="flex-shrink mx-4 text-xs text-zinc-500 uppercase tracking-wider">Or</span>
+            <span class="mx-4 text-xs text-zinc-500 uppercase">Or</span>
             <div class="flex-grow border-t border-zinc-800"></div>
           </div>
-          <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2 active:scale-[0.98] transition">
-            <span>Continue as Guest</span>
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          <button onclick="login('guest')" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl flex items-center justify-center space-x-2">
+            <span>Continue as Guest</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
@@ -121,41 +99,58 @@
 
   <!-- WELCOME -->
   <div id="welcome-overlay" class="hidden fixed inset-0 z-40 bg-black/80 flex items-center justify-center p-6">
-    <div class="bg-card border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl fade-in">
+    <div class="bg-card border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-5 fade-in">
       <div class="w-16 h-16 mx-auto rounded-full bg-accent/20 flex items-center justify-center">
         <i data-lucide="hand" class="w-8 h-8 text-accent"></i>
       </div>
-      <div>
-        <h2 class="text-2xl font-black mb-2" id="welcome-title">Welcome!</h2>
-        <p class="text-zinc-400 text-sm leading-relaxed" id="welcome-message">
-          Ready to start your journey? Pick Weight Gain or Weight Loss and show up every day.
-        </p>
-      </div>
-      <button onclick="dismissWelcome()" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
-        Let's Go
-      </button>
+      <h2 class="text-2xl font-black" id="welcome-title">Welcome!</h2>
+      <p class="text-zinc-400 text-sm" id="welcome-message">Let's build some gains.</p>
+      <button onclick="dismissWelcome()" class="w-full py-3.5 bg-accent text-black font-bold rounded-xl">Let's Go</button>
     </div>
   </div>
+
+  <!-- REST TIMER OVERLAY -->
+  <div id="timer-overlay" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6">
+    <p class="text-zinc-400 text-sm mb-4 uppercase tracking-widest">Rest Timer</p>
+    <div class="relative w-48 h-48 mb-6">
+      <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="6"/>
+        <circle id="timer-circle" cx="50" cy="50" r="45" fill="none" stroke="#FF6600" stroke-width="6" class="timer-ring" stroke-linecap="round"/>
+      </svg>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span id="timer-display" class="text-5xl font-black">60</span>
+      </div>
+    </div>
+    <div class="flex gap-3 mb-6">
+      <button onclick="startTimer(30)" class="px-4 py-2 bg-zinc-800 rounded-xl text-sm font-bold">30s</button>
+      <button onclick="startTimer(60)" class="px-4 py-2 bg-zinc-800 rounded-xl text-sm font-bold">60s</button>
+      <button onclick="startTimer(90)" class="px-4 py-2 bg-zinc-800 rounded-xl text-sm font-bold">90s</button>
+    </div>
+    <button onclick="stopTimer()" class="px-8 py-3 bg-accent text-black font-bold rounded-xl">Skip Rest</button>
+  </div>
+
+  <!-- SHARE CARD CANVAS (hidden) -->
+  <canvas id="share-canvas" width="600" height="800" class="hidden"></canvas>
 
   <!-- MAIN APP -->
   <div id="app-shell" class="hidden min-h-screen flex flex-col">
     <header class="p-4 bg-card border-b border-zinc-800 flex justify-between items-center sticky top-0 z-30">
       <div class="flex items-center space-x-3">
-        <img src="logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-full"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm" style="display:none;">30</div>
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-black text-black text-sm">30</div>
         <div>
-          <h1 class="font-extrabold text-lg leading-none tracking-tight">30 DAYS OF GAINS</h1>
+          <h1 class="font-extrabold text-lg leading-none">30 DAYS OF GAINS</h1>
           <p class="text-xs text-zinc-400" id="user-status">Guest Athlete</p>
         </div>
       </div>
-      <button onclick="switchScreen('settings')" class="p-2 text-zinc-400">
-        <i data-lucide="settings" class="w-5 h-5"></i>
-      </button>
+      <button onclick="switchScreen('settings')" class="p-2 text-zinc-400"><i data-lucide="settings" class="w-5 h-5"></i></button>
     </header>
 
     <!-- HOME -->
-    <section id="screen-home" class="flex-1 p-4 max-w-md mx-auto w-full space-y-5">
+    <section id="screen-home" class="flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <div id="streak-risk" class="hidden bg-red-900/30 border border-red-800/50 rounded-xl p-3 text-sm text-red-300">
+        🔥 Streak at risk — finish today's workout to keep it alive!
+      </div>
+
       <div class="bg-card p-5 rounded-2xl border border-zinc-800 flex items-center justify-between">
         <div>
           <span class="text-xs font-bold text-accent uppercase tracking-wider">This Month</span>
@@ -165,174 +160,175 @@
         <div class="w-16 h-16 rounded-full border-4 border-accent flex items-center justify-center font-bold text-lg" id="home-progress-percent">0%</div>
       </div>
 
-      <!-- Program selector -->
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="selectProgram('gain')" id="btn-program-gain"
-                class="p-4 rounded-2xl border-2 text-left transition active:scale-[0.98]">
+        <button onclick="selectProgram('gain')" id="btn-program-gain" class="p-4 rounded-2xl border-2 text-left">
           <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
           <h4 class="text-lg font-black">Weight Gain</h4>
-          <p class="text-xs text-zinc-400 mt-1">100 Push · 100 Sit · 100 Squat</p>
+          <p class="text-xs text-zinc-400 mt-1">100·100·100</p>
         </button>
-        <button onclick="selectProgram('loss')" id="btn-program-loss"
-                class="p-4 rounded-2xl border-2 text-left transition active:scale-[0.98]">
+        <button onclick="selectProgram('loss')" id="btn-program-loss" class="p-4 rounded-2xl border-2 text-left">
           <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
           <h4 class="text-lg font-black">Weight Loss</h4>
-          <p class="text-xs text-zinc-400 mt-1">100 JJ · 50 Push · 50 Sit</p>
+          <p class="text-xs text-zinc-400 mt-1">100 JJ · 50 · 50</p>
         </button>
       </div>
 
       <div class="space-y-3">
-        <button onclick="openTodayWorkout()" class="w-full p-5 bg-card rounded-2xl border-2 border-accent text-left flex items-center justify-between active:scale-[0.98] transition">
+        <button onclick="openTodayWorkout()" class="w-full p-5 bg-card rounded-2xl border-2 border-accent text-left flex items-center justify-between">
           <div>
             <span class="bg-accent text-black text-xs font-extrabold px-2 py-0.5 rounded">TODAY</span>
             <h4 class="text-xl font-bold mt-2">Today's Workout</h4>
-            <p class="text-xs text-zinc-400 mt-0.5" id="today-summary">Select a program above</p>
+            <p class="text-xs text-zinc-400 mt-0.5" id="today-summary">Select a program</p>
           </div>
           <i data-lucide="dumbbell" class="text-accent w-8 h-8"></i>
         </button>
-
-        <button onclick="switchScreen('calendar')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
-          <div>
-            <h4 class="text-lg font-bold">Calendar</h4>
-            <p class="text-xs text-zinc-400">Monthly view · accurate dates</p>
-          </div>
+        <button onclick="switchScreen('calendar')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">Calendar</h4><p class="text-xs text-zinc-400">Monthly view</p></div>
           <i data-lucide="calendar" class="w-6 h-6 text-zinc-400"></i>
         </button>
-
-        <button onclick="switchScreen('community')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
-          <div>
-            <h4 class="text-lg font-bold">Community</h4>
-            <p class="text-xs text-zinc-400">Share gains & motivate each other</p>
-          </div>
-          <i data-lucide="users" class="w-6 h-6 text-zinc-400"></i>
+        <button onclick="switchScreen('weekly')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">Weekly Summary</h4><p class="text-xs text-zinc-400">This week's gains</p></div>
+          <i data-lucide="bar-chart-2" class="w-6 h-6 text-zinc-400"></i>
         </button>
-
-        <button onclick="switchScreen('stats')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
-          <div>
-            <h4 class="text-lg font-bold">Gains & Stats</h4>
-            <p class="text-xs text-zinc-400">Totals, streaks & history</p>
-          </div>
+        <button onclick="switchScreen('achievements')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">Achievements</h4><p class="text-xs text-zinc-400">Badges & milestones</p></div>
+          <i data-lucide="award" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+        <button onclick="switchScreen('photos')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">Progress Photos</h4><p class="text-xs text-zinc-400">Private before/after</p></div>
+          <i data-lucide="camera" class="w-6 h-6 text-zinc-400"></i>
+        </button>
+        <button onclick="switchScreen('stats')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">Stats</h4><p class="text-xs text-zinc-400">Totals by program</p></div>
           <i data-lucide="activity" class="w-6 h-6 text-zinc-400"></i>
         </button>
-
-        <button onclick="switchScreen('about')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between active:scale-[0.98] transition">
-          <div>
-            <h4 class="text-lg font-bold">About</h4>
-            <p class="text-xs text-zinc-400">Program info & app details</p>
-          </div>
+        <button onclick="switchScreen('about')" class="w-full p-4 bg-card rounded-2xl border border-zinc-800 text-left flex items-center justify-between">
+          <div><h4 class="text-lg font-bold">About</h4><p class="text-xs text-zinc-400">Info & export</p></div>
           <i data-lucide="info" class="w-6 h-6 text-zinc-400"></i>
         </button>
       </div>
     </section>
 
-    <!-- WORKOUT (today only) -->
+    <!-- TODAY WORKOUT -->
     <section id="screen-today" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xs text-accent font-bold uppercase" id="workout-program-label">Weight Gain</p>
-            <h2 class="text-xl font-black" id="workout-title">Today's Circuit</h2>
-            <p class="text-xs text-zinc-400" id="workout-date"></p>
-          </div>
-        </div>
+        <p class="text-xs text-accent font-bold uppercase" id="workout-program-label">Weight Gain</p>
+        <h2 class="text-xl font-black" id="workout-title">Today's Circuit</h2>
+        <p class="text-xs text-zinc-400" id="workout-date"></p>
         <div class="mt-4">
-          <div class="flex justify-between text-xs text-zinc-400 mb-1">
-            <span>Circuit Progress</span>
-            <span id="circuit-percent">0%</span>
-          </div>
+          <div class="flex justify-between text-xs text-zinc-400 mb-1"><span>Progress</span><span id="circuit-percent">0%</span></div>
           <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div id="circuit-bar" class="h-full bg-accent transition-all duration-300" style="width:0%"></div>
+            <div id="circuit-bar" class="h-full bg-accent transition-all" style="width:0%"></div>
           </div>
         </div>
       </div>
       <div class="space-y-3" id="exercise-list"></div>
-      <button onclick="completeWorkout()" id="complete-btn"
-              class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none"
-              disabled>
+      <button onclick="openTimer()" class="w-full py-3 bg-zinc-800 text-zinc-200 font-bold rounded-xl text-sm flex items-center justify-center gap-2">
+        <i data-lucide="timer" class="w-4 h-4"></i> Rest Timer
+      </button>
+      <button onclick="completeWorkout()" id="complete-btn" class="w-full py-4 bg-accent text-black font-extrabold rounded-xl text-sm disabled:opacity-40" disabled>
         COMPLETE WORKOUT
       </button>
-      <button onclick="saveAndExit()" class="w-full py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl text-sm active:scale-[0.98] transition">
-        Save & Finish Later
-      </button>
-      <p class="text-center text-xs text-zinc-500" id="workout-lock-msg">Progress auto-saves as you log reps</p>
+      <button onclick="saveAndExit()" class="w-full py-3 bg-zinc-800 text-zinc-300 font-bold rounded-xl text-sm">Save & Finish Later</button>
+      <p class="text-center text-xs text-zinc-500" id="workout-lock-msg">Progress auto-saves</p>
     </section>
 
     <!-- CALENDAR -->
     <section id="screen-calendar" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
-
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
         <div class="flex items-center justify-between mb-4">
-          <button onclick="changeMonth(-1)" class="p-2 rounded-lg bg-zinc-800 active:scale-95">
-            <i data-lucide="chevron-left" class="w-5 h-5"></i>
-          </button>
-          <h2 class="text-lg font-black" id="cal-month-label">September 2026</h2>
-          <button onclick="changeMonth(1)" class="p-2 rounded-lg bg-zinc-800 active:scale-95">
-            <i data-lucide="chevron-right" class="w-5 h-5"></i>
-          </button>
+          <button onclick="changeMonth(-1)" class="p-2 rounded-lg bg-zinc-800"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+          <h2 class="text-lg font-black" id="cal-month-label"></h2>
+          <button onclick="changeMonth(1)" class="p-2 rounded-lg bg-zinc-800"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
         </div>
         <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs text-zinc-500 font-bold">
           <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
         </div>
         <div class="grid grid-cols-7 gap-1" id="calendar-grid"></div>
-        <div class="flex flex-wrap gap-3 mt-4 text-xs text-zinc-400">
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-accent inline-block"></span> Completed</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded border-2 border-accent inline-block"></span> Today</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-zinc-700 inline-block opacity-40"></span> Future (locked)</span>
-        </div>
       </div>
-
       <div id="cal-day-detail" class="bg-card p-4 rounded-xl border border-zinc-800 hidden">
-        <h3 class="font-bold mb-2" id="cal-detail-title">Day details</h3>
+        <h3 class="font-bold mb-2" id="cal-detail-title"></h3>
         <div id="cal-detail-body" class="text-sm text-zinc-300 space-y-1"></div>
       </div>
+    </section>
+
+    <!-- WEEKLY -->
+    <section id="screen-weekly" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
+      </button>
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 text-center space-y-2">
+        <p class="text-xs text-accent font-bold uppercase">This Week</p>
+        <h2 class="text-3xl font-black" id="weekly-days">0 / 7 days</h2>
+        <p class="text-sm text-zinc-400" id="weekly-reps">0 total reps</p>
+        <p class="text-sm text-zinc-300 mt-2" id="weekly-message">Show up this week.</p>
+      </div>
+      <div class="grid grid-cols-7 gap-2" id="weekly-dots"></div>
+      <button onclick="shareCard()" class="w-full py-3 bg-accent text-black font-bold rounded-xl">Share This Week</button>
+    </section>
+
+    <!-- ACHIEVEMENTS -->
+    <section id="screen-achievements" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
+      </button>
+      <h2 class="text-xl font-black">Achievements</h2>
+      <div id="achievements-list" class="space-y-3"></div>
+    </section>
+
+    <!-- PROGRESS PHOTOS -->
+    <section id="screen-photos" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
+      </button>
+      <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
+        <h3 class="font-bold">Add Progress Photo</h3>
+        <p class="text-xs text-zinc-500">Private — only on this device</p>
+        <input type="file" id="progress-photo-input" accept="image/*" class="w-full text-sm text-zinc-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-black file:font-bold">
+        <input type="text" id="progress-photo-note" placeholder="Week 1, morning..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm">
+        <button onclick="saveProgressPhoto()" class="w-full py-3 bg-accent text-black font-bold rounded-xl">Save Photo</button>
+      </div>
+      <div id="progress-photos-list" class="space-y-3"></div>
     </section>
 
     <!-- COMMUNITY -->
     <section id="screen-community" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
       <div class="bg-card p-4 rounded-xl border border-zinc-800">
-        <h2 class="text-lg font-black mb-1">Community</h2>
-        <p class="text-xs text-zinc-400">Share your gains and motivate each other</p>
+        <h2 class="text-lg font-black">Community</h2>
+        <p class="text-xs text-zinc-400">Share gains & motivate each other</p>
       </div>
       <div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
-        <h3 class="font-bold text-sm">Post Your Gains</h3>
+        <h3 class="font-bold text-sm">Create a post</h3>
+        <textarea id="post-caption" rows="3" placeholder="What's on your mind? Text only is fine..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm resize-none"></textarea>
         <input type="file" id="post-image" accept="image/*" class="w-full text-sm text-zinc-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-black file:font-bold">
-        <textarea id="post-caption" rows="2" placeholder="Write a caption..."
-                  class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-accent resize-none"></textarea>
-        <button onclick="createPost()" id="post-btn" class="w-full py-3 bg-accent text-black font-bold rounded-xl active:scale-[0.98] transition">
-          Share Post
-        </button>
+        <p class="text-xs text-zinc-500">Photo is optional — you can post text only</p>
+        <button onclick="createPost()" id="post-btn" class="w-full py-3 bg-accent text-black font-bold rounded-xl">Share Post</button>
         <p id="post-status" class="text-xs text-center text-zinc-500 hidden"></p>
       </div>
-      <div id="community-feed" class="space-y-4">
-        <p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>
-      </div>
+      <div id="community-feed" class="space-y-4"></div>
     </section>
 
     <!-- STATS -->
     <section id="screen-stats" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
       <div class="bg-card p-5 rounded-xl border border-zinc-800 text-center">
-        <p class="text-xs text-accent font-bold uppercase tracking-wider mb-1">Total Reps (all time)</p>
-        <p class="text-3xl font-black" id="stats-volume">0 reps</p>
+        <p class="text-xs text-accent font-bold uppercase mb-1">All-time Reps</p>
+        <p class="text-3xl font-black" id="stats-volume">0</p>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
-          <p class="text-xs text-zinc-400 mb-1">Workouts Done</p>
+          <p class="text-xs text-zinc-400 mb-1">Workouts</p>
           <p class="text-2xl font-black" id="stats-workouts">0</p>
         </div>
         <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
@@ -340,653 +336,755 @@
           <p class="text-2xl font-black" id="stats-streak">0</p>
         </div>
       </div>
-      <div class="bg-card p-4 rounded-xl border border-zinc-800">
-        <h3 class="font-bold mb-3">Recent Activity</h3>
-        <div id="stats-history" class="space-y-2 text-sm text-zinc-400">
-          <p class="text-center py-4">No workouts completed yet</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
+          <p class="text-xs text-zinc-400 mb-1">Weight Gain</p>
+          <p class="text-xl font-black" id="stats-gain">0</p>
         </div>
+        <div class="bg-card p-4 rounded-xl border border-zinc-800 text-center">
+          <p class="text-xs text-zinc-400 mb-1">Weight Loss</p>
+          <p class="text-xl font-black" id="stats-loss">0</p>
+        </div>
+      </div>
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <h3 class="font-bold mb-3">Recent</h3>
+        <div id="stats-history" class="space-y-2 text-sm text-zinc-400"></div>
       </div>
     </section>
 
     <!-- ABOUT -->
     <section id="screen-about" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
-      <div class="bg-card p-6 rounded-2xl border border-zinc-800 text-center space-y-4">
-        <img src="logo.png" alt="Logo" class="w-20 h-20 mx-auto object-contain rounded-full"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="w-20 h-20 mx-auto rounded-full bg-accent flex items-center justify-center" style="display:none;">
+      <div class="bg-card p-6 rounded-2xl border border-zinc-800 text-center space-y-3">
+        <div class="w-20 h-20 mx-auto rounded-full bg-accent flex items-center justify-center">
           <span class="text-3xl font-black text-black">30</span>
         </div>
-        <div>
-          <h2 class="text-2xl font-black">30 DAYS OF GAINS</h2>
-          <p class="text-zinc-400 text-sm mt-1">Version 2.0.0</p>
-        </div>
+        <h2 class="text-2xl font-black">30 DAYS OF GAINS</h2>
+        <p class="text-zinc-400 text-sm">Version 2.1.0</p>
       </div>
-      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-3">
-        <h3 class="font-bold text-accent">Weight Gain</h3>
-        <p class="text-sm text-zinc-300">100 Push-ups · 100 Sit-ups · 100 Squats every day.</p>
-        <h3 class="font-bold text-accent pt-2">Weight Loss</h3>
-        <p class="text-sm text-zinc-300">100 Jumping Jacks · 50 Push-ups · 50 Sit-ups every day.</p>
-        <p class="text-sm text-zinc-400 pt-2">You can only complete today's workout — no faking future days. Counters can go past the target if you want extra reps.</p>
+      <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-2 text-sm text-zinc-300">
+        <p><strong class="text-accent">Weight Gain:</strong> 100 Push · 100 Sit · 100 Squat</p>
+        <p><strong class="text-accent">Weight Loss:</strong> 100 Jumping Jacks · 50 Push · 50 Sit</p>
+        <p class="text-zinc-500 pt-2">No future days. Counters can exceed targets. Progress auto-saves.</p>
       </div>
+      <button onclick="exportData()" class="w-full py-3 bg-zinc-800 text-zinc-200 font-bold rounded-xl">Export Data (CSV)</button>
     </section>
 
     <!-- SETTINGS -->
     <section id="screen-settings" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
       <button onclick="switchScreen('home')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
-        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        <span>BACK TO HOME</span>
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
       </button>
       <div class="bg-card p-5 rounded-xl border border-zinc-800 space-y-4">
-        <h2 class="text-lg font-bold">App Settings</h2>
-        <div class="pt-2 space-y-3">
-          <button onclick="resetData()" class="w-full py-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-xl text-sm font-bold">
-            Reset All Progress
-          </button>
-          <button onclick="logout()" class="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">
-            Sign Out
-          </button>
+        <h2 class="text-lg font-bold">Settings</h2>
+        <div>
+          <label class="text-sm text-zinc-400">Daily reminder time</label>
+          <input type="time" id="reminder-time" value="18:00" class="w-full mt-1 bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-white">
         </div>
+        <button onclick="enableReminders()" class="w-full py-3 bg-accent text-black font-bold rounded-xl">Enable Daily Reminder</button>
+        <p id="reminder-status" class="text-xs text-zinc-500 text-center"></p>
+        <button onclick="resetData()" class="w-full py-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-xl text-sm font-bold">Reset All Progress</button>
+        <button onclick="logout()" class="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">Sign Out</button>
       </div>
     </section>
+
+    <!-- BOTTOM NAV -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-zinc-800 safe-bottom">
+      <div class="max-w-md mx-auto flex">
+        <button onclick="switchScreen('home')" id="nav-home" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-accent">
+          <i data-lucide="home" class="w-6 h-6"></i>
+          <span class="text-[10px] font-bold uppercase tracking-wide">Home</span>
+        </button>
+        <button onclick="switchScreen('community')" id="nav-community" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-zinc-500">
+          <i data-lucide="users" class="w-6 h-6"></i>
+          <span class="text-[10px] font-bold uppercase tracking-wide">Community</span>
+        </button>
+      </div>
+    </nav>
   </div>
 
-  <script>
-    // ==================== SUPABASE ====================
-    const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHF6bmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTM3MzQsImV4cCI6MjEwNTIyOTczNH0.idCoawoxIpvaSl8ziVKqKP1QQ2jWQBod58kTzO3eCc4";
+<script>
+// ==================== CONFIG ====================
+const SUPABASE_URL = "https://vyedkzhbhqznjlrvathi.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZWRremhiaHF6bmpscnZhdGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTM3MzQsImV4cCI6MjEwNTIyOTczNH0.idCoawoxIpvaSl8ziVKqKP1QQ2jWQBod58kTzO3eCc4";
+let supabaseClient = null;
+try {
+  if (window.supabase && window.supabase.createClient)
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch(e) {}
 
-    let supabaseClient = null;
-    try {
-      if (window.supabase && window.supabase.createClient) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.warn("Supabase failed to load:", e);
-    }
+const PROGRAMS = {
+  gain: { id:"gain", name:"Weight Gain", exercises:[
+    {key:"pushups",name:"Push-ups",icon:"💪",target:100},
+    {key:"situps",name:"Sit-ups",icon:"🔥",target:100},
+    {key:"squats",name:"Squats",icon:"🦵",target:100}
+  ]},
+  loss: { id:"loss", name:"Weight Loss", exercises:[
+    {key:"jumpingjacks",name:"Jumping Jacks",icon:"⚡",target:100},
+    {key:"pushups",name:"Push-ups",icon:"💪",target:50},
+    {key:"situps",name:"Sit-ups",icon:"🔥",target:50}
+  ]}
+};
 
-    // ==================== PROGRAMS ====================
-    const PROGRAMS = {
-      gain: {
-        id: "gain",
-        name: "Weight Gain",
-        exercises: [
-          { key: "pushups", name: "Push-ups", icon: "💪", target: 100 },
-          { key: "situps", name: "Sit-ups", icon: "🔥", target: 100 },
-          { key: "squats", name: "Squats", icon: "🦵", target: 100 }
-        ]
-      },
-      loss: {
-        id: "loss",
-        name: "Weight Loss",
-        exercises: [
-          { key: "jumpingjacks", name: "Jumping Jacks", icon: "⚡", target: 100 },
-          { key: "pushups", name: "Push-ups", icon: "💪", target: 50 },
-          { key: "situps", name: "Sit-ups", icon: "🔥", target: 50 }
-        ]
-      }
-    };
+const ACHIEVEMENTS = [
+  {id:"first", name:"First Day", desc:"Complete your first workout", check:s=>s.workouts>=1},
+  {id:"week", name:"Full Week", desc:"7 completed days", check:s=>s.workouts>=7},
+  {id:"streak7", name:"7-Day Streak", desc:"Hit a 7-day streak", check:s=>s.bestStreak>=7},
+  {id:"streak30", name:"30-Day Streak", desc:"Hit a 30-day streak", check:s=>s.bestStreak>=30},
+  {id:"reps1k", name:"1,000 Reps", desc:"Log 1,000 total reps", check:s=>s.totalReps>=1000},
+  {id:"reps10k", name:"10,000 Reps", desc:"Log 10,000 total reps", check:s=>s.totalReps>=10000},
+  {id:"both", name:"Dual Path", desc:"Complete both Gain & Loss days", check:s=>s.gainDays>=1&&s.lossDays>=1}
+];
 
-    // ==================== STATE ====================
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem("user")); } catch(e) {}
+// ==================== STATE ====================
+let user=null; try{user=JSON.parse(localStorage.getItem("user"))}catch(e){}
+let activeProgram=localStorage.getItem("activeProgram")||"gain";
+let dayLog={}; try{dayLog=JSON.parse(localStorage.getItem("dayLog"))||{}}catch(e){}
+let progressPhotos=[]; try{progressPhotos=JSON.parse(localStorage.getItem("progressPhotos"))||[]}catch(e){}
+let unlockedAchievements=[]; try{unlockedAchievements=JSON.parse(localStorage.getItem("achievements"))||[]}catch(e){}
+let onboardStep=0;
+let calYear, calMonth, dayCounts={}, viewingDate=null;
+let timerInterval=null, timerTotal=60, timerLeft=60;
 
-    let activeProgram = localStorage.getItem("activeProgram") || "gain";
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function safeIcons(){try{if(window.lucide)lucide.createIcons()}catch(e){}}
+function haptic(ms){try{if(navigator.vibrate)navigator.vibrate(ms||30)}catch(e){}}
 
-    // dayLog: { "2026-09-18": { program, counts: {...}, completed: true } }
-    let dayLog = {};
-    try { dayLog = JSON.parse(localStorage.getItem("dayLog")) || {}; } catch(e) {}
+// ==================== OFFLINE ====================
+function updateOnlineStatus(){
+  const b=document.getElementById("offline-banner");
+  if(!navigator.onLine) b.classList.add("show"); else b.classList.remove("show");
+}
+window.addEventListener("online",updateOnlineStatus);
+window.addEventListener("offline",updateOnlineStatus);
 
-    let calYear, calMonth; // 0-indexed month
-    let dayCounts = {};
-    let viewingDate = null; // YYYY-MM-DD currently open in workout screen
-
-    function todayStr() {
-      const d = new Date();
-      return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-    }
-
-    function safeIcons() {
-      try { if (window.lucide) lucide.createIcons(); } catch(e) {}
-    }
-
-    // ==================== SPLASH ====================
-    function hideSplash() {
-      try {
-        const splash = document.getElementById("screen-splash");
-        if (splash) {
-          splash.style.display = "none";
-          splash.style.visibility = "hidden";
-        }
-        if (user) {
-          const status = document.getElementById("user-status");
-          if (status) status.innerText = user.name || "Athlete";
-          document.getElementById("app-shell").classList.remove("hidden");
-          switchScreen("home");
-          updateHomeUI();
-        } else {
-          document.getElementById("screen-auth").classList.remove("hidden");
-        }
-        safeIcons();
-      } catch (e) {
-        console.error(e);
-        var s = document.getElementById("screen-splash");
-        if (s) s.style.display = "none";
-        var a = document.getElementById("screen-auth");
-        if (a) a.classList.remove("hidden");
-      }
-    }
-
-    setTimeout(hideSplash, 3000);
-    setTimeout(hideSplash, 5000);
-    setTimeout(hideSplash, 7000);
-    window.addEventListener("load", function() { setTimeout(hideSplash, 1000); });
-
-    // ==================== NAV ====================
-    function switchScreen(screen) {
-      ["home","today","calendar","stats","about","settings","community"].forEach(function(s) {
-        const el = document.getElementById("screen-" + s);
-        if (el) el.classList.add("hidden");
-      });
-      const target = document.getElementById("screen-" + screen);
-      if (target) {
-        target.classList.remove("hidden");
-        target.classList.add("fade-in");
-      }
-      if (screen === "calendar") {
-        const now = new Date();
-        calYear = now.getFullYear();
-        calMonth = now.getMonth();
-        renderCalendar();
-      }
-      if (screen === "stats") renderStats();
-      if (screen === "community") loadCommunityFeed();
-      if (screen === "home") updateHomeUI();
-      safeIcons();
-    }
-
-    // ==================== AUTH ====================
-    function login(provider) {
-      user = { name: provider === "guest" ? "Guest Athlete" : "Athlete", provider: provider };
-      localStorage.setItem("user", JSON.stringify(user));
-      document.getElementById("user-status").innerText = user.name;
-      document.getElementById("screen-auth").classList.add("hidden");
-      document.getElementById("welcome-title").innerText = "Welcome, " + user.name.split(" ")[0] + "!";
-      document.getElementById("welcome-overlay").classList.remove("hidden");
-      safeIcons();
-    }
-    function dismissWelcome() {
-      document.getElementById("welcome-overlay").classList.add("hidden");
+// ==================== SPLASH / BOOT ====================
+function hideSplash(){
+  try{
+    const splash=document.getElementById("screen-splash");
+    if(splash){splash.style.display="none";splash.style.visibility="hidden"}
+    const onboarded=localStorage.getItem("onboarded");
+    if(!onboarded){
+      document.getElementById("screen-onboarding").classList.remove("hidden");
+      renderOnboard();
+    } else if(user){
+      document.getElementById("user-status").innerText=user.name||"Athlete";
       document.getElementById("app-shell").classList.remove("hidden");
       switchScreen("home");
-    }
-    function logout() {
-      localStorage.removeItem("user");
-      user = null;
-      document.getElementById("app-shell").classList.add("hidden");
+    } else {
       document.getElementById("screen-auth").classList.remove("hidden");
     }
+    safeIcons(); updateOnlineStatus(); checkReminders();
+  }catch(e){
+    document.getElementById("screen-splash").style.display="none";
+    document.getElementById("screen-auth").classList.remove("hidden");
+  }
+}
+setTimeout(hideSplash,3000); setTimeout(hideSplash,5000); setTimeout(hideSplash,7000);
+window.addEventListener("load",()=>setTimeout(hideSplash,1000));
 
-    // ==================== PROGRAM SELECT ====================
-    function selectProgram(id) {
-      activeProgram = id;
-      localStorage.setItem("activeProgram", id);
-      updateHomeUI();
+// ==================== ONBOARDING ====================
+const ONBOARD_STEPS=[
+  {title:"Welcome to 30 DAYS OF GAINS", body:"Two programs. Real calendar. No faking future days. Show up daily."},
+  {title:"Pick your path", body:"Weight Gain: 100 push-ups, sit-ups & squats.\nWeight Loss: 100 jumping jacks, 50 push-ups & 50 sit-ups."},
+  {title:"Stay consistent", body:"Enable a daily reminder in Settings. Streaks reward showing up — not perfection."}
+];
+function renderOnboard(){
+  const s=ONBOARD_STEPS[onboardStep];
+  document.getElementById("onboard-step").innerHTML=`<h2 class="text-2xl font-black">${s.title}</h2><p class="text-zinc-400 whitespace-pre-line">${s.body}</p><p class="text-xs text-zinc-600">${onboardStep+1}/${ONBOARD_STEPS.length}</p>`;
+  document.getElementById("onboard-next").innerText=onboardStep===ONBOARD_STEPS.length-1?"Get Started":"Continue";
+}
+function onboardNext(){
+  if(onboardStep<ONBOARD_STEPS.length-1){onboardStep++;renderOnboard()}
+  else finishOnboarding();
+}
+function finishOnboarding(){
+  localStorage.setItem("onboarded","1");
+  document.getElementById("screen-onboarding").classList.add("hidden");
+  if(user){document.getElementById("app-shell").classList.remove("hidden");switchScreen("home")}
+  else document.getElementById("screen-auth").classList.remove("hidden");
+  safeIcons();
+}
+
+// ==================== AUTH ====================
+function login(provider){
+  user={name:provider==="guest"?"Guest Athlete":"Athlete",provider};
+  localStorage.setItem("user",JSON.stringify(user));
+  document.getElementById("user-status").innerText=user.name;
+  document.getElementById("screen-auth").classList.add("hidden");
+  document.getElementById("welcome-title").innerText="Welcome, "+user.name.split(" ")[0]+"!";
+  document.getElementById("welcome-overlay").classList.remove("hidden");
+  safeIcons();
+}
+function dismissWelcome(){
+  document.getElementById("welcome-overlay").classList.add("hidden");
+  document.getElementById("app-shell").classList.remove("hidden");
+  switchScreen("home");
+}
+function logout(){
+  localStorage.removeItem("user"); user=null;
+  document.getElementById("app-shell").classList.add("hidden");
+  document.getElementById("screen-auth").classList.remove("hidden");
+}
+
+// ==================== NAV ====================
+function switchScreen(screen){
+  ["home","today","calendar","weekly","achievements","photos","community","stats","about","settings"].forEach(s=>{
+    const el=document.getElementById("screen-"+s); if(el) el.classList.add("hidden");
+  });
+  const t=document.getElementById("screen-"+screen);
+  if(t){t.classList.remove("hidden");t.classList.add("fade-in")}
+  // Bottom nav highlight
+  const navHome=document.getElementById("nav-home");
+  const navComm=document.getElementById("nav-community");
+  if(navHome&&navComm){
+    if(screen==="community"){
+      navComm.className="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-accent";
+      navHome.className="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-zinc-500";
+    } else {
+      navHome.className="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-accent";
+      navComm.className="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-zinc-500";
     }
+  }
+  if(screen==="home") updateHomeUI();
+  if(screen==="calendar"){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();renderCalendar()}
+  if(screen==="weekly") renderWeekly();
+  if(screen==="achievements") renderAchievements();
+  if(screen==="photos") renderProgressPhotos();
+  if(screen==="stats") renderStats();
+  if(screen==="community") loadCommunityFeed();
+  if(screen==="settings"){
+    const rt=localStorage.getItem("reminderTime"); if(rt) document.getElementById("reminder-time").value=rt;
+  }
+  safeIcons();
+}
 
-    function updateHomeUI() {
-      const gainBtn = document.getElementById("btn-program-gain");
-      const lossBtn = document.getElementById("btn-program-loss");
-      if (activeProgram === "gain") {
-        gainBtn.className = "p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left transition active:scale-[0.98]";
-        lossBtn.className = "p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left transition active:scale-[0.98]";
-      } else {
-        lossBtn.className = "p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left transition active:scale-[0.98]";
-        gainBtn.className = "p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left transition active:scale-[0.98]";
+// ==================== HOME / PROGRAM ====================
+function selectProgram(id){
+  activeProgram=id; localStorage.setItem("activeProgram",id); updateHomeUI(); haptic(20);
+}
+function updateHomeUI(){
+  const gainBtn=document.getElementById("btn-program-gain");
+  const lossBtn=document.getElementById("btn-program-loss");
+  if(activeProgram==="gain"){
+    gainBtn.className="p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left";
+    lossBtn.className="p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left";
+  } else {
+    lossBtn.className="p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left";
+    gainBtn.className="p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left";
+  }
+  const prog=PROGRAMS[activeProgram];
+  const today=todayStr();
+  const te=dayLog[today];
+  let summary=prog.name+" · "+prog.exercises.map(e=>e.target+" "+e.name.split(" ")[0]).join(" · ");
+  if(te&&te.completed) summary="✓ Completed today";
+  else if(te&&te.counts&&Object.values(te.counts).some(v=>v>0)) summary="In progress — tap to continue";
+  document.getElementById("today-summary").innerText=summary;
+
+  const now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  let done=0, dim=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=dim;d++){
+    const k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    if(dayLog[k]&&dayLog[k].completed) done++;
+  }
+  document.getElementById("home-progress-text").innerText=done+" days done";
+  document.getElementById("home-progress-percent").innerText=Math.round(done/dim*100)+"%";
+  const streak=calcStreak();
+  document.getElementById("home-streak-text").innerText="Current Streak: "+streak+" Days 🔥";
+
+  // Streak at risk: has streak, today not completed, after 6pm local
+  const risk=document.getElementById("streak-risk");
+  const hour=new Date().getHours();
+  if(streak>0 && !(te&&te.completed) && hour>=18) risk.classList.remove("hidden");
+  else risk.classList.add("hidden");
+
+  checkAchievements();
+}
+function calcStreak(){
+  let streak=0; const d=new Date();
+  for(let i=0;i<365;i++){
+    const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    if(dayLog[k]&&dayLog[k].completed){streak++;d.setDate(d.getDate()-1)}
+    else{if(i===0){d.setDate(d.getDate()-1);continue} break}
+  }
+  return streak;
+}
+function calcBestStreak(){
+  const dates=Object.keys(dayLog).filter(k=>dayLog[k].completed).sort();
+  if(!dates.length) return 0;
+  let best=1,cur=1;
+  for(let i=1;i<dates.length;i++){
+    const a=new Date(dates[i-1]), b=new Date(dates[i]);
+    const diff=(b-a)/(86400000);
+    if(diff===1){cur++;best=Math.max(best,cur)} else cur=1;
+  }
+  return best;
+}
+
+// ==================== WORKOUT ====================
+function openTodayWorkout(){ viewingDate=todayStr(); openWorkoutForDate(viewingDate,true) }
+function openWorkoutForDate(dateStr, useSelected){
+  viewingDate=dateStr;
+  if(dateStr>todayStr()){alert("Can't log future days.");return}
+  const entry=dayLog[dateStr];
+  if(!useSelected && entry&&entry.program&&PROGRAMS[entry.program]) activeProgram=entry.program;
+  const prog=PROGRAMS[activeProgram];
+  dayCounts={};
+  prog.exercises.forEach(ex=>{
+    dayCounts[ex.key]=(entry&&entry.program===activeProgram&&entry.counts&&entry.counts[ex.key])?entry.counts[ex.key]:0;
+  });
+  document.getElementById("workout-program-label").innerText=prog.name;
+  document.getElementById("workout-title").innerText=dateStr===todayStr()?"Today's Circuit":"Workout";
+  document.getElementById("workout-date").innerText=formatDateNice(dateStr);
+  document.getElementById("workout-lock-msg").innerText=
+    (entry&&entry.completed&&entry.program===activeProgram)?"Completed — extra reps OK":"Progress auto-saves. Finish later anytime.";
+  renderCounters(); updateCircuitProgress(); switchScreen("today");
+}
+function formatDateNice(ds){
+  const [y,m,d]=ds.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"});
+}
+function saveDayCounts(){
+  if(!dayLog[viewingDate]) dayLog[viewingDate]={program:activeProgram,counts:{},completed:false};
+  dayLog[viewingDate].counts=Object.assign({},dayCounts);
+  dayLog[viewingDate].program=activeProgram;
+  localStorage.setItem("dayLog",JSON.stringify(dayLog));
+}
+function changeCount(key,delta){
+  if(viewingDate>todayStr()) return;
+  dayCounts[key]=Math.max(0,(dayCounts[key]||0)+delta);
+  saveDayCounts(); renderCounters(); updateCircuitProgress();
+  const prog=PROGRAMS[activeProgram];
+  const ex=prog.exercises.find(e=>e.key===key);
+  if(ex && dayCounts[key]===ex.target) haptic([40,30,40]);
+}
+function setCount(key,val){
+  if(viewingDate>todayStr()) return;
+  const n=parseInt(val,10); if(isNaN(n)||n<0) return;
+  dayCounts[key]=n; saveDayCounts(); renderCounters(); updateCircuitProgress();
+}
+function updateCircuitProgress(){
+  const prog=PROGRAMS[activeProgram];
+  let done=0,total=0;
+  prog.exercises.forEach(ex=>{done+=Math.min(dayCounts[ex.key]||0,ex.target);total+=ex.target});
+  const pct=total?Math.min(100,Math.round(done/total*100)):0;
+  document.getElementById("circuit-percent").innerText=pct+"%";
+  document.getElementById("circuit-bar").style.width=pct+"%";
+  const allDone=prog.exercises.every(ex=>(dayCounts[ex.key]||0)>=ex.target);
+  const already=dayLog[viewingDate]&&dayLog[viewingDate].completed&&dayLog[viewingDate].program===activeProgram;
+  const btn=document.getElementById("complete-btn");
+  btn.disabled=!allDone||already;
+  if(already){btn.innerText="ALREADY COMPLETED ✓";btn.classList.add("bg-green-600");btn.classList.remove("bg-accent")}
+  else if(allDone){btn.innerText="COMPLETE WORKOUT ✓";btn.classList.add("bg-green-600");btn.classList.remove("bg-accent")}
+  else{btn.innerText="COMPLETE WORKOUT";btn.classList.add("bg-accent");btn.classList.remove("bg-green-600")}
+}
+function renderCounters(){
+  const prog=PROGRAMS[activeProgram];
+  document.getElementById("exercise-list").innerHTML=prog.exercises.map(ex=>{
+    const c=dayCounts[ex.key]||0, done=c>=ex.target, bar=Math.min(100,Math.round(c/ex.target*100));
+    return `<div class="bg-card p-4 rounded-xl border ${done?'border-accent':'border-zinc-800'}">
+      <div class="flex justify-between mb-3"><div class="flex items-center gap-2"><span>${ex.icon}</span><h4 class="font-bold">${ex.name}</h4></div>
+      <span class="text-xs font-bold ${done?'text-accent':'text-zinc-500'}">${c} / ${ex.target}${c>ex.target?' (+'+(c-ex.target)+')':''}</span></div>
+      <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden"><div class="h-full bg-accent" style="width:${bar}%"></div></div>
+      <div class="flex justify-between gap-2">
+        <button onclick="changeCount('${ex.key}',-10)" class="w-12 h-12 rounded-xl bg-zinc-800 font-bold">-10</button>
+        <button onclick="changeCount('${ex.key}',-1)" class="w-12 h-12 rounded-xl bg-zinc-800 font-bold text-xl">−</button>
+        <input type="number" min="0" value="${c}" onchange="setCount('${ex.key}',this.value)" class="w-16 h-12 text-center bg-zinc-900 border border-zinc-700 rounded-xl font-black">
+        <button onclick="changeCount('${ex.key}',1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl">+</button>
+        <button onclick="changeCount('${ex.key}',10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold">+10</button>
+      </div></div>`;
+  }).join("");
+}
+function completeWorkout(){
+  if(viewingDate>todayStr()){alert("Can't complete future days.");return}
+  const prog=PROGRAMS[activeProgram];
+  if(!prog.exercises.every(ex=>(dayCounts[ex.key]||0)>=ex.target)){alert("Hit every target first!");return}
+  if(!dayLog[viewingDate]) dayLog[viewingDate]={program:activeProgram,counts:{},completed:false};
+  dayLog[viewingDate].counts=Object.assign({},dayCounts);
+  dayLog[viewingDate].completed=true;
+  dayLog[viewingDate].program=activeProgram;
+  localStorage.setItem("dayLog",JSON.stringify(dayLog));
+  haptic([50,40,50,40,80]);
+  document.getElementById("complete-btn").innerText="DONE ✓";
+  setTimeout(()=>{switchScreen("home");updateHomeUI()},700);
+}
+function saveAndExit(){saveDayCounts();switchScreen("home");updateHomeUI()}
+
+// ==================== REST TIMER ====================
+function openTimer(){document.getElementById("timer-overlay").classList.remove("hidden");startTimer(60)}
+function startTimer(sec){
+  clearInterval(timerInterval);
+  timerTotal=sec; timerLeft=sec;
+  document.getElementById("timer-display").innerText=sec;
+  updateTimerRing();
+  timerInterval=setInterval(()=>{
+    timerLeft--;
+    document.getElementById("timer-display").innerText=Math.max(0,timerLeft);
+    updateTimerRing();
+    if(timerLeft<=0){
+      clearInterval(timerInterval);
+      haptic([100,50,100,50,200]);
+      document.getElementById("timer-display").innerText="GO!";
+    }
+  },1000);
+}
+function updateTimerRing(){
+  const circle=document.getElementById("timer-circle");
+  const offset=283*(1-timerLeft/timerTotal);
+  circle.style.strokeDashoffset=offset;
+}
+function stopTimer(){
+  clearInterval(timerInterval);
+  document.getElementById("timer-overlay").classList.add("hidden");
+}
+
+// ==================== CALENDAR ====================
+function changeMonth(d){
+  calMonth+=d; if(calMonth<0){calMonth=11;calYear--} if(calMonth>11){calMonth=0;calYear++}
+  renderCalendar();
+}
+function renderCalendar(){
+  const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  document.getElementById("cal-month-label").innerText=months[calMonth]+" "+calYear;
+  const grid=document.getElementById("calendar-grid"); grid.innerHTML="";
+  const first=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const today=todayStr();
+  for(let i=0;i<first;i++) grid.appendChild(document.createElement("div"));
+  for(let d=1;d<=dim;d++){
+    const ds=calYear+"-"+String(calMonth+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    const btn=document.createElement("button"); btn.className="cal-day"; btn.innerHTML="<span>"+d+"</span>";
+    const entry=dayLog[ds], fut=ds>today, done=entry&&entry.completed;
+    const prog=entry&&entry.counts&&!done&&Object.values(entry.counts).some(v=>v>0);
+    if(fut) btn.classList.add("future");
+    else if(done) btn.classList.add("completed");
+    else if(prog){btn.classList.add("past-empty");btn.style.border="1px solid #FF6600";btn.style.color="#FF6600"}
+    else btn.classList.add("past-empty");
+    if(ds===today) btn.classList.add("today");
+    if(!fut) btn.onclick=()=>{showCalDetail(ds);openWorkoutForDate(ds,false)};
+    grid.appendChild(btn);
+  }
+  safeIcons();
+}
+function showCalDetail(ds){
+  const box=document.getElementById("cal-day-detail"); box.classList.remove("hidden");
+  document.getElementById("cal-detail-title").innerText=formatDateNice(ds);
+  const e=dayLog[ds];
+  if(!e){document.getElementById("cal-detail-body").innerHTML="<p class='text-zinc-500'>No workout logged.</p>";return}
+  const prog=PROGRAMS[e.program]||PROGRAMS.gain;
+  let html="<p class='text-accent font-bold'>"+prog.name+(e.completed?" ✓":" (in progress)")+"</p>";
+  prog.exercises.forEach(ex=>{html+="<p>"+ex.icon+" "+ex.name+": <strong>"+((e.counts&&e.counts[ex.key])||0)+"</strong> / "+ex.target+"</p>"});
+  document.getElementById("cal-detail-body").innerHTML=html;
+}
+
+// ==================== WEEKLY ====================
+function renderWeekly(){
+  const now=new Date();
+  const day=now.getDay();
+  const start=new Date(now); start.setDate(now.getDate()-day);
+  let completed=0, reps=0;
+  const dots=document.getElementById("weekly-dots"); dots.innerHTML="";
+  const names=["S","M","T","W","T","F","S"];
+  for(let i=0;i<7;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    const e=dayLog[k];
+    const done=e&&e.completed;
+    if(done){completed++; if(e.counts) Object.values(e.counts).forEach(v=>reps+=v)}
+    const el=document.createElement("div");
+    el.className="text-center";
+    el.innerHTML=`<div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center text-xs font-bold ${done?'bg-accent text-black':'bg-zinc-800 text-zinc-500'}">${names[i]}</div>`;
+    dots.appendChild(el);
+  }
+  document.getElementById("weekly-days").innerText=completed+" / 7 days";
+  document.getElementById("weekly-reps").innerText=reps.toLocaleString()+" total reps";
+  const msgs=["Every rep counts.","Consistency compounds.","You're building the habit.","Strong week — keep going.","Almost there.","Elite consistency.","Perfect week. Legend."];
+  document.getElementById("weekly-message").innerText=msgs[Math.min(completed,6)];
+}
+
+// ==================== ACHIEVEMENTS ====================
+function getStatsObj(){
+  let totalReps=0,workouts=0,gainDays=0,lossDays=0;
+  Object.keys(dayLog).forEach(k=>{
+    const e=dayLog[k];
+    if(e.completed){workouts++; if(e.program==="gain")gainDays++; if(e.program==="loss")lossDays++}
+    if(e.counts) Object.values(e.counts).forEach(v=>totalReps+=v);
+  });
+  return {totalReps,workouts,bestStreak:Math.max(calcStreak(),calcBestStreak()),gainDays,lossDays};
+}
+function checkAchievements(){
+  const s=getStatsObj();
+  ACHIEVEMENTS.forEach(a=>{
+    if(unlockedAchievements.indexOf(a.id)===-1 && a.check(s)){
+      unlockedAchievements.push(a.id);
+      localStorage.setItem("achievements",JSON.stringify(unlockedAchievements));
+      haptic([80,40,80]);
+    }
+  });
+}
+function renderAchievements(){
+  const s=getStatsObj();
+  document.getElementById("achievements-list").innerHTML=ACHIEVEMENTS.map(a=>{
+    const on=unlockedAchievements.indexOf(a.id)!==-1 || a.check(s);
+    return `<div class="bg-card p-4 rounded-xl border ${on?'border-accent':'border-zinc-800'} flex items-center gap-4 ${on?'':'opacity-50'}">
+      <div class="w-12 h-12 rounded-full ${on?'bg-accent text-black':'bg-zinc-800'} flex items-center justify-center text-xl">🏆</div>
+      <div><h4 class="font-bold">${a.name}</h4><p class="text-xs text-zinc-400">${a.desc}</p></div>
+      ${on?'<span class="ml-auto text-accent text-xs font-bold">UNLOCKED</span>':''}
+    </div>`;
+  }).join("");
+}
+
+// ==================== PROGRESS PHOTOS ====================
+function saveProgressPhoto(){
+  const input=document.getElementById("progress-photo-input");
+  const note=document.getElementById("progress-photo-note").value.trim();
+  if(!input.files||!input.files[0]){alert("Choose a photo");return}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    progressPhotos.unshift({id:Date.now(),note:note||"Progress",date:todayStr(),data:ev.target.result});
+    // keep last 20 to avoid huge storage
+    progressPhotos=progressPhotos.slice(0,20);
+    localStorage.setItem("progressPhotos",JSON.stringify(progressPhotos));
+    input.value=""; document.getElementById("progress-photo-note").value="";
+    renderProgressPhotos(); haptic(40);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function renderProgressPhotos(){
+  const list=document.getElementById("progress-photos-list");
+  if(!progressPhotos.length){list.innerHTML='<p class="text-center text-zinc-500 py-6 text-sm">No private photos yet</p>';return}
+  list.innerHTML=progressPhotos.map(p=>`
+    <div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
+      <img src="${p.data}" class="w-full max-h-64 object-cover">
+      <div class="p-3 flex justify-between items-center">
+        <div><p class="font-bold text-sm">${p.note}</p><p class="text-xs text-zinc-500">${p.date}</p></div>
+        <button onclick="deletePhoto(${p.id})" class="text-red-400 text-xs font-bold">Delete</button>
+      </div>
+    </div>`).join("");
+}
+function deletePhoto(id){
+  progressPhotos=progressPhotos.filter(p=>p.id!==id);
+  localStorage.setItem("progressPhotos",JSON.stringify(progressPhotos));
+  renderProgressPhotos();
+}
+
+// ==================== SHARE CARD ====================
+function shareCard(){
+  const s=getStatsObj();
+  const canvas=document.getElementById("share-canvas");
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#181818"; ctx.fillRect(0,0,600,800);
+  ctx.fillStyle="#FF6600"; ctx.beginPath(); ctx.arc(300,120,50,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#000"; ctx.font="bold 36px sans-serif"; ctx.textAlign="center"; ctx.fillText("30",300,132);
+  ctx.fillStyle="#fff"; ctx.font="bold 28px sans-serif"; ctx.fillText("30 DAYS OF GAINS",300,200);
+  ctx.fillStyle="#a1a1aa"; ctx.font="16px sans-serif"; ctx.fillText("This week's grind",300,240);
+  ctx.fillStyle="#FF6600"; ctx.font="bold 64px sans-serif";
+  const weekDone=document.getElementById("weekly-days").innerText.split(" ")[0];
+  ctx.fillText(weekDone+"/7",300,340);
+  ctx.fillStyle="#fff"; ctx.font="20px sans-serif"; ctx.fillText("days completed",300,380);
+  ctx.fillStyle="#a1a1aa"; ctx.font="18px sans-serif";
+  ctx.fillText(s.totalReps.toLocaleString()+" lifetime reps",300,440);
+  ctx.fillText("Streak: "+calcStreak()+" days",300,480);
+  ctx.fillStyle="#FF6600"; ctx.font="bold 18px sans-serif"; ctx.fillText("Show up. Every day.",300,560);
+  canvas.toBlob(function(blob){
+    if(navigator.share&&navigator.canShare){
+      const file=new File([blob],"30gains-week.png",{type:"image/png"});
+      navigator.share({files:[file],title:"30 Days of Gains"}).catch(()=>downloadShare(canvas));
+    } else downloadShare(canvas);
+  });
+}
+function downloadShare(canvas){
+  const a=document.createElement("a");
+  a.href=canvas.toDataURL("image/png"); a.download="30gains-week.png"; a.click();
+}
+
+// ==================== EXPORT ====================
+function exportData(){
+  let csv="date,program,completed,reps\n";
+  Object.keys(dayLog).sort().forEach(k=>{
+    const e=dayLog[k];
+    let reps=0; if(e.counts) Object.values(e.counts).forEach(v=>reps+=v);
+    csv+=k+","+(e.program||"")+","+(e.completed?"yes":"no")+","+reps+"\n";
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="30gains-export.csv"; a.click();
+}
+
+// ==================== REMINDERS ====================
+function enableReminders(){
+  const time=document.getElementById("reminder-time").value||"18:00";
+  localStorage.setItem("reminderTime",time);
+  if(!("Notification" in window)){
+    document.getElementById("reminder-status").innerText="Notifications not supported on this browser";
+    return;
+  }
+  Notification.requestPermission().then(function(perm){
+    if(perm==="granted"){
+      localStorage.setItem("remindersEnabled","1");
+      document.getElementById("reminder-status").innerText="Reminder set for "+time+" (when app is open)";
+      checkReminders();
+    } else {
+      document.getElementById("reminder-status").innerText="Permission denied — enable in browser settings";
+    }
+  });
+}
+function checkReminders(){
+  if(localStorage.getItem("remindersEnabled")!=="1") return;
+  if(Notification.permission!=="granted") return;
+  const time=localStorage.getItem("reminderTime")||"18:00";
+  const [h,m]=time.split(":").map(Number);
+  setInterval(function(){
+    const now=new Date();
+    if(now.getHours()===h && now.getMinutes()===m && now.getSeconds()<5){
+      const today=todayStr();
+      if(!(dayLog[today]&&dayLog[today].completed)){
+        new Notification("30 DAYS OF GAINS",{body:"Time for today's circuit. Don't break the streak!",icon:"logo.png"});
       }
-
-      const prog = PROGRAMS[activeProgram];
-      const today = todayStr();
-      const todayEntry = dayLog[today];
-      let summary = prog.name + " · " + prog.exercises.map(function(e){ return e.target + " " + e.name.split(" ")[0]; }).join(" · ");
-      if (todayEntry && todayEntry.completed) {
-        summary = "✓ Completed today — great work!";
-      } else if (todayEntry && todayEntry.counts) {
-        const hasProgress = Object.keys(todayEntry.counts).some(function(k){ return todayEntry.counts[k] > 0; });
-        if (hasProgress) summary = "In progress — tap to continue";
-      }
-      document.getElementById("today-summary").innerText = summary;
-
-      // Month progress
-      const now = new Date();
-      const y = now.getFullYear(), m = now.getMonth();
-      let completedThisMonth = 0;
-      const daysInMonth = new Date(y, m + 1, 0).getDate();
-      for (let d = 1; d <= daysInMonth; d++) {
-        const key = y + "-" + String(m+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
-        if (dayLog[key] && dayLog[key].completed) completedThisMonth++;
-      }
-      const pct = Math.round((completedThisMonth / daysInMonth) * 100);
-      document.getElementById("home-progress-text").innerText = completedThisMonth + " days done";
-      document.getElementById("home-progress-percent").innerText = pct + "%";
-      document.getElementById("home-streak-text").innerText = "Current Streak: " + calcStreak() + " Days 🔥";
     }
+  },5000);
+}
 
-    function calcStreak() {
-      let streak = 0;
-      const d = new Date();
-      for (let i = 0; i < 365; i++) {
-        const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-        if (dayLog[key] && dayLog[key].completed) {
-          streak++;
-          d.setDate(d.getDate() - 1);
-        } else {
-          // allow today not done yet without breaking streak if yesterday was done
-          if (i === 0) { d.setDate(d.getDate() - 1); continue; }
-          break;
-        }
-      }
-      return streak;
-    }
+// ==================== STATS ====================
+function renderStats(){
+  const s=getStatsObj();
+  document.getElementById("stats-volume").innerText=s.totalReps.toLocaleString()+" reps";
+  document.getElementById("stats-workouts").innerText=s.workouts;
+  document.getElementById("stats-streak").innerText=s.bestStreak;
+  document.getElementById("stats-gain").innerText=s.gainDays+" days";
+  document.getElementById("stats-loss").innerText=s.lossDays+" days";
+  const dates=Object.keys(dayLog).filter(k=>dayLog[k].completed).sort().reverse().slice(0,8);
+  const hist=document.getElementById("stats-history");
+  if(!dates.length) hist.innerHTML='<p class="text-center py-4 text-zinc-500">No workouts yet</p>';
+  else hist.innerHTML=dates.map(k=>{
+    const p=dayLog[k].program==="loss"?"Loss":"Gain";
+    return `<div class="flex justify-between py-2 border-b border-zinc-800"><span>${formatDateNice(k)}</span><span class="text-accent text-xs">${p} ✓</span></div>`;
+  }).join("");
+}
+function resetData(){
+  if(confirm("Reset ALL progress, photos & achievements?")){
+    dayLog={}; progressPhotos=[]; unlockedAchievements=[];
+    localStorage.setItem("dayLog","{}");
+    localStorage.setItem("progressPhotos","[]");
+    localStorage.setItem("achievements","[]");
+    updateHomeUI(); alert("Reset complete."); switchScreen("home");
+  }
+}
 
-    // ==================== WORKOUT ====================
-    function openTodayWorkout() {
-      // Always open with the program currently selected on Home
-      viewingDate = todayStr();
-      openWorkoutForDate(viewingDate, true);
-    }
-
-    function openWorkoutForDate(dateStr, useSelectedProgram) {
-      viewingDate = dateStr;
-      const isToday = dateStr === todayStr();
-      const isFuture = dateStr > todayStr();
-
-      if (isFuture) {
-        alert("You can't log future days. Come back on that date!");
-        return;
-      }
-
-      const entry = dayLog[dateStr];
-
-      // Today's Workout button → use selected program from Home.
-      // Calendar (past days) → keep the program that was used that day.
-      if (!useSelectedProgram && entry && entry.program && PROGRAMS[entry.program]) {
-        activeProgram = entry.program;
-      }
-
-      const prog = PROGRAMS[activeProgram];
-      dayCounts = {};
-      prog.exercises.forEach(function(ex) {
-        if (entry && entry.program === activeProgram && entry.counts && entry.counts[ex.key]) {
-          dayCounts[ex.key] = entry.counts[ex.key];
-        } else {
-          dayCounts[ex.key] = 0;
-        }
-      });
-
-      document.getElementById("workout-program-label").innerText = prog.name;
-      document.getElementById("workout-title").innerText = isToday ? "Today's Circuit" : "Workout";
-      document.getElementById("workout-date").innerText = formatDateNice(dateStr);
-
-      const lockMsg = document.getElementById("workout-lock-msg");
-      if (entry && entry.completed && entry.program === activeProgram) {
-        lockMsg.innerText = "Completed — you can still add extra reps.";
-      } else {
-        lockMsg.innerText = "Progress auto-saves. Come back anytime to finish.";
-      }
-
-      renderCounters();
-      updateCircuitProgress();
-      switchScreen("today");
-    }
-
-    function saveAndExit() {
-      saveDayCounts();
-      switchScreen("home");
-      updateHomeUI();
-    }
-
-    function formatDateNice(dateStr) {
-      const [y,m,d] = dateStr.split("-").map(Number);
-      const dt = new Date(y, m-1, d);
-      return dt.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" });
-    }
-
-    function saveDayCounts() {
-      if (!dayLog[viewingDate]) dayLog[viewingDate] = { program: activeProgram, counts: {}, completed: false };
-      dayLog[viewingDate].counts = Object.assign({}, dayCounts);
-      dayLog[viewingDate].program = activeProgram;
-      localStorage.setItem("dayLog", JSON.stringify(dayLog));
-    }
-
-    function updateCircuitProgress() {
-      const prog = PROGRAMS[activeProgram];
-      let done = 0, total = 0;
-      prog.exercises.forEach(function(ex) {
-        done += Math.min(dayCounts[ex.key] || 0, ex.target);
-        total += ex.target;
-      });
-      const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
-      document.getElementById("circuit-percent").innerText = pct + "%";
-      document.getElementById("circuit-bar").style.width = pct + "%";
-
-      const allDone = prog.exercises.every(function(ex) {
-        return (dayCounts[ex.key] || 0) >= ex.target;
-      });
-      const btn = document.getElementById("complete-btn");
-      const already = dayLog[viewingDate] && dayLog[viewingDate].completed;
-      btn.disabled = !allDone || already;
-      if (already) {
-        btn.innerText = "ALREADY COMPLETED ✓";
-        btn.classList.remove("bg-accent");
-        btn.classList.add("bg-green-600");
-      } else if (allDone) {
-        btn.innerText = "COMPLETE WORKOUT ✓";
-        btn.classList.remove("bg-accent");
-        btn.classList.add("bg-green-600");
-      } else {
-        btn.innerText = "COMPLETE WORKOUT";
-        btn.classList.add("bg-accent");
-        btn.classList.remove("bg-green-600");
-      }
-    }
-
-    function changeCount(key, delta) {
-      if (viewingDate > todayStr()) return;
-      dayCounts[key] = Math.max(0, (dayCounts[key] || 0) + delta);
-      // No upper cap — can go above target
-      saveDayCounts();
-      renderCounters();
-      updateCircuitProgress();
-    }
-
-    function setCount(key, value) {
-      if (viewingDate > todayStr()) return;
-      const num = parseInt(value, 10);
-      if (isNaN(num) || num < 0) return;
-      dayCounts[key] = num;
-      saveDayCounts();
-      renderCounters();
-      updateCircuitProgress();
-    }
-
-    function renderCounters() {
-      const list = document.getElementById("exercise-list");
-      const prog = PROGRAMS[activeProgram];
-      list.innerHTML = prog.exercises.map(function(ex) {
-        const count = dayCounts[ex.key] || 0;
-        const done = count >= ex.target;
-        const barPct = Math.min(100, Math.round((count / ex.target) * 100));
-        return `
-          <div class="bg-card p-4 rounded-xl border ${done ? 'border-accent' : 'border-zinc-800'}">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center space-x-2">
-                <span class="text-lg">${ex.icon}</span>
-                <h4 class="font-bold">${ex.name}</h4>
-              </div>
-              <span class="text-xs font-bold ${done ? 'text-accent' : 'text-zinc-500'}">
-                ${count} / ${ex.target}${count > ex.target ? ' (+' + (count - ex.target) + ')' : ''}
-              </span>
+// ==================== COMMUNITY ====================
+async function loadCommunityFeed(){
+  const feed=document.getElementById("community-feed");
+  if(!supabaseClient){feed.innerHTML='<p class="text-center text-zinc-500 py-8 text-sm">Community unavailable</p>';return}
+  feed.innerHTML='<p class="text-center text-zinc-500 py-8 text-sm">Loading...</p>';
+  try{
+    const {data,error}=await supabaseClient.from("posts").select("*").order("created_at",{ascending:false}).limit(30);
+    if(error) throw error;
+    if(!data||!data.length){feed.innerHTML='<p class="text-center text-zinc-500 py-8 text-sm">No posts yet</p>';return}
+    feed.innerHTML=data.map(post=>{
+      const date=post.created_at?new Date(post.created_at).toLocaleDateString():"";
+      return `<div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
+        ${post.image_url?`<img src="${post.image_url}" class="w-full max-h-80 object-cover">`:""}
+        <div class="p-4 space-y-2">
+          <div class="flex justify-between"><span class="font-bold text-sm">${post.user_name||"Athlete"}</span><span class="text-xs text-zinc-500">${date}</span></div>
+          ${post.caption?`<p class="text-sm text-zinc-300">${post.caption}</p>`:""}
+          <div class="flex gap-4 items-center">
+            <button onclick="likePost('${post.id}',${post.likes||0})" class="flex items-center gap-1 text-sm text-zinc-400"><i data-lucide="heart" class="w-4 h-4"></i>${post.likes||0}</button>
+            <button onclick="toggleComments('${post.id}')" class="text-sm text-zinc-400">Comments</button>
+          </div>
+          <div id="comments-${post.id}" class="hidden space-y-2 pt-2 border-t border-zinc-800">
+            <div id="comments-list-${post.id}" class="text-sm text-zinc-400 space-y-1"></div>
+            <div class="flex gap-2">
+              <input id="comment-input-${post.id}" placeholder="Add a comment..." class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+              <button onclick="addComment('${post.id}')" class="px-3 py-2 bg-accent text-black text-sm font-bold rounded-lg">Post</button>
             </div>
-            <div class="w-full h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
-              <div class="h-full bg-accent transition-all duration-200" style="width:${barPct}%"></div>
-            </div>
-            <div class="flex items-center justify-between space-x-2">
-              <button onclick="changeCount('${ex.key}', -10)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-lg active:scale-95 transition">-10</button>
-              <button onclick="changeCount('${ex.key}', -1)" class="w-12 h-12 rounded-xl bg-zinc-800 text-white font-bold text-xl active:scale-95 transition">−</button>
-              <input type="number" min="0" value="${count}" onchange="setCount('${ex.key}', this.value)"
-                     class="w-16 h-12 text-center bg-zinc-900 border border-zinc-700 rounded-xl font-black text-lg text-white focus:outline-none focus:border-accent">
-              <button onclick="changeCount('${ex.key}', 1)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-xl active:scale-95 transition">+</button>
-              <button onclick="changeCount('${ex.key}', 10)" class="w-12 h-12 rounded-xl bg-accent text-black font-bold text-lg active:scale-95 transition">+10</button>
-            </div>
-          </div>`;
-      }).join("");
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+    safeIcons();
+  }catch(err){console.error(err);feed.innerHTML='<p class="text-center text-red-400 py-8 text-sm">Could not load posts</p>'}
+}
+async function createPost(){
+  if(!supabaseClient){alert("Community unavailable");return}
+  const fileInput=document.getElementById("post-image");
+  const caption=document.getElementById("post-caption").value.trim();
+  const btn=document.getElementById("post-btn"), status=document.getElementById("post-status");
+  const hasImage=fileInput.files&&fileInput.files[0];
+  if(!hasImage && !caption){
+    alert("Write something or add a photo.");
+    return;
+  }
+  btn.disabled=true;
+  btn.innerText=hasImage?"Uploading...":"Posting...";
+  status.classList.remove("hidden");
+  status.innerText=hasImage?"Uploading...":"Posting...";
+  try{
+    let imageUrl=null;
+    if(hasImage){
+      const file=fileInput.files[0];
+      const name=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9.]/g,"_");
+      const {error:upErr}=await supabaseClient.storage.from("gains").upload(name,file);
+      if(upErr) throw upErr;
+      const {data:urlData}=supabaseClient.storage.from("gains").getPublicUrl(name);
+      imageUrl=urlData.publicUrl;
     }
+    const {error:insErr}=await supabaseClient.from("posts").insert({
+      user_name:(user&&user.name)||"Athlete",
+      caption:caption||null,
+      image_url:imageUrl,
+      likes:0
+    });
+    if(insErr) throw insErr;
+    status.innerText="Posted!"; status.classList.add("text-green-400");
+    fileInput.value=""; document.getElementById("post-caption").value="";
+    loadCommunityFeed();
+  }catch(err){console.error(err);status.innerText="Error: "+(err.message||"Failed");status.classList.add("text-red-400")}
+  btn.disabled=false; btn.innerText="Share Post";
+  setTimeout(()=>{status.classList.add("hidden");status.classList.remove("text-green-400","text-red-400")},3000);
+}
+async function likePost(id,likes){
+  if(!supabaseClient) return;
+  try{await supabaseClient.from("posts").update({likes:likes+1}).eq("id",id);loadCommunityFeed()}catch(e){console.error(e)}
+}
+function toggleComments(postId){
+  const el=document.getElementById("comments-"+postId);
+  if(!el) return;
+  el.classList.toggle("hidden");
+  if(!el.classList.contains("hidden")) loadComments(postId);
+}
+async function loadComments(postId){
+  const list=document.getElementById("comments-list-"+postId);
+  if(!supabaseClient){list.innerHTML="<p class='text-xs'>Comments need setup</p>";return}
+  try{
+    const {data,error}=await supabaseClient.from("comments").select("*").eq("post_id",postId).order("created_at",{ascending:true});
+    if(error) throw error;
+    if(!data||!data.length){list.innerHTML="<p class='text-xs text-zinc-500'>No comments yet</p>";return}
+    list.innerHTML=data.map(c=>`<p><strong class="text-zinc-300">${c.user_name||"Athlete"}:</strong> ${c.text}</p>`).join("");
+  }catch(e){
+    list.innerHTML="<p class='text-xs text-zinc-500'>Create a 'comments' table in Supabase to enable</p>";
+  }
+}
+async function addComment(postId){
+  const input=document.getElementById("comment-input-"+postId);
+  const text=(input&&input.value||"").trim();
+  if(!text||!supabaseClient) return;
+  try{
+    await supabaseClient.from("comments").insert({
+      post_id:postId, user_name:(user&&user.name)||"Athlete", text:text
+    });
+    input.value="";
+    loadComments(postId);
+  }catch(e){
+    alert("Comments table not set up yet in Supabase");
+  }
+}
 
-    function completeWorkout() {
-      if (viewingDate > todayStr()) {
-        alert("You can't complete future days.");
-        return;
-      }
-      const prog = PROGRAMS[activeProgram];
-      const allDone = prog.exercises.every(function(ex) {
-        return (dayCounts[ex.key] || 0) >= ex.target;
-      });
-      if (!allDone) {
-        alert("Hit the target on every exercise first!");
-        return;
-      }
-      if (!dayLog[viewingDate]) dayLog[viewingDate] = { program: activeProgram, counts: {}, completed: false };
-      dayLog[viewingDate].counts = Object.assign({}, dayCounts);
-      dayLog[viewingDate].completed = true;
-      dayLog[viewingDate].program = activeProgram;
-      localStorage.setItem("dayLog", JSON.stringify(dayLog));
-
-      const btn = document.getElementById("complete-btn");
-      btn.innerText = "DONE ✓";
-      btn.classList.add("bg-green-600");
-      setTimeout(function() {
-        switchScreen("home");
-        updateHomeUI();
-      }, 700);
-    }
-
-    // ==================== CALENDAR ====================
-    function changeMonth(delta) {
-      calMonth += delta;
-      if (calMonth < 0) { calMonth = 11; calYear--; }
-      if (calMonth > 11) { calMonth = 0; calYear++; }
-      renderCalendar();
-    }
-
-    function renderCalendar() {
-      const label = document.getElementById("cal-month-label");
-      const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-      label.innerText = months[calMonth] + " " + calYear;
-
-      const grid = document.getElementById("calendar-grid");
-      grid.innerHTML = "";
-
-      const firstDay = new Date(calYear, calMonth, 1).getDay();
-      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-      const today = todayStr();
-
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement("div");
-        grid.appendChild(empty);
-      }
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = calYear + "-" + String(calMonth+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
-        const btn = document.createElement("button");
-        btn.className = "cal-day";
-        btn.innerHTML = "<span>" + d + "</span>";
-
-        const isFuture = dateStr > today;
-        const isToday = dateStr === today;
-        const entry = dayLog[dateStr];
-        const completed = entry && entry.completed;
-        const inProgress = entry && entry.counts && !completed &&
-          Object.keys(entry.counts).some(function(k){ return entry.counts[k] > 0; });
-
-        if (isFuture) btn.classList.add("future");
-        else if (completed) btn.classList.add("completed");
-        else if (inProgress) {
-          btn.classList.add("past-empty");
-          btn.style.border = "1px solid #FF6600";
-          btn.style.color = "#FF6600";
-        } else btn.classList.add("past-empty");
-        if (isToday) btn.classList.add("today");
-
-        if (!isFuture) {
-          btn.onclick = (function(ds) {
-            return function() {
-              showCalDetail(ds);
-              // Allow opening workout for today or past
-              openWorkoutForDate(ds);
-            };
-          })(dateStr);
-        }
-
-        grid.appendChild(btn);
-      }
-      safeIcons();
-    }
-
-    function showCalDetail(dateStr) {
-      const box = document.getElementById("cal-day-detail");
-      const title = document.getElementById("cal-detail-title");
-      const body = document.getElementById("cal-detail-body");
-      box.classList.remove("hidden");
-      title.innerText = formatDateNice(dateStr);
-      const entry = dayLog[dateStr];
-      if (!entry) {
-        body.innerHTML = "<p class='text-zinc-500'>No workout logged.</p>";
-        return;
-      }
-      const prog = PROGRAMS[entry.program] || PROGRAMS.gain;
-      let html = "<p class='text-accent font-bold mb-2'>" + prog.name + (entry.completed ? " ✓ Completed" : " (in progress)") + "</p>";
-      prog.exercises.forEach(function(ex) {
-        const c = (entry.counts && entry.counts[ex.key]) || 0;
-        html += "<p>" + ex.icon + " " + ex.name + ": <strong>" + c + "</strong> / " + ex.target + "</p>";
-      });
-      body.innerHTML = html;
-    }
-
-    // ==================== STATS ====================
-    function renderStats() {
-      let totalReps = 0;
-      let workouts = 0;
-      const dates = Object.keys(dayLog).sort().reverse();
-      dates.forEach(function(k) {
-        const e = dayLog[k];
-        if (e.completed) workouts++;
-        if (e.counts) {
-          Object.keys(e.counts).forEach(function(ck) {
-            totalReps += e.counts[ck] || 0;
-          });
-        }
-      });
-      document.getElementById("stats-volume").innerText = totalReps.toLocaleString() + " reps";
-      document.getElementById("stats-workouts").innerText = workouts;
-      document.getElementById("stats-streak").innerText = calcStreak();
-
-      const history = document.getElementById("stats-history");
-      const completed = dates.filter(function(k){ return dayLog[k].completed; }).slice(0, 10);
-      if (completed.length === 0) {
-        history.innerHTML = '<p class="text-center py-4 text-zinc-500">No workouts completed yet</p>';
-      } else {
-        history.innerHTML = completed.map(function(k) {
-          const p = dayLog[k].program === "loss" ? "Weight Loss" : "Weight Gain";
-          return '<div class="flex justify-between items-center py-2 border-b border-zinc-800"><span>' + formatDateNice(k) + '</span><span class="text-accent text-xs">' + p + ' ✓</span></div>';
-        }).join("");
-      }
-    }
-
-    function resetData() {
-      if (confirm("Reset ALL progress? This cannot be undone.")) {
-        dayLog = {};
-        localStorage.setItem("dayLog", JSON.stringify({}));
-        updateHomeUI();
-        alert("Progress reset.");
-        switchScreen("home");
-      }
-    }
-
-    // ==================== COMMUNITY ====================
-    async function loadCommunityFeed() {
-      const feed = document.getElementById("community-feed");
-      if (!feed) return;
-      feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Loading posts...</p>';
-      if (!supabaseClient) {
-        feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">Community temporarily unavailable.</p>';
-        return;
-      }
-      try {
-        const { data, error } = await supabaseClient.from("posts").select("*").order("created_at", { ascending: false }).limit(30);
-        if (error) throw error;
-        if (!data || data.length === 0) {
-          feed.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">No posts yet. Be the first!</p>';
-          return;
-        }
-        feed.innerHTML = data.map(function(post) {
-          const date = post.created_at ? new Date(post.created_at).toLocaleDateString() : "";
-          return `
-            <div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
-              ${post.image_url ? '<img src="'+post.image_url+'" alt="Gains" class="w-full max-h-80 object-cover">' : ""}
-              <div class="p-4 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="font-bold text-sm">${post.user_name || "Athlete"}</span>
-                  <span class="text-xs text-zinc-500">${date}</span>
-                </div>
-                ${post.caption ? '<p class="text-sm text-zinc-300">'+post.caption+'</p>' : ""}
-                <button onclick="likePost('${post.id}', ${post.likes||0})" class="flex items-center space-x-1 text-sm text-zinc-400">
-                  <i data-lucide="heart" class="w-4 h-4"></i>
-                  <span>${post.likes||0}</span>
-                </button>
-              </div>
-            </div>`;
-        }).join("");
-        safeIcons();
-      } catch (err) {
-        console.error(err);
-        feed.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load posts.</p>';
-      }
-    }
-
-    async function createPost() {
-      if (!supabaseClient) { alert("Community unavailable."); return; }
-      const fileInput = document.getElementById("post-image");
-      const caption = document.getElementById("post-caption").value.trim();
-      const btn = document.getElementById("post-btn");
-      const status = document.getElementById("post-status");
-      if (!fileInput.files || !fileInput.files[0]) { alert("Select a photo first."); return; }
-      btn.disabled = true;
-      btn.innerText = "Uploading...";
-      status.classList.remove("hidden");
-      status.innerText = "Uploading...";
-      try {
-        const file = fileInput.files[0];
-        const fileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-        const { error: uploadError } = await supabaseClient.storage.from("gains").upload(fileName, file);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabaseClient.storage.from("gains").getPublicUrl(fileName);
-        const { error: insertError } = await supabaseClient.from("posts").insert({
-          user_name: (user && user.name) ? user.name : "Athlete",
-          caption: caption || null,
-          image_url: urlData.publicUrl,
-          likes: 0
-        });
-        if (insertError) throw insertError;
-        status.innerText = "Posted!";
-        status.classList.add("text-green-400");
-        fileInput.value = "";
-        document.getElementById("post-caption").value = "";
-        loadCommunityFeed();
-      } catch (err) {
-        console.error(err);
-        status.innerText = "Error: " + (err.message || "Failed");
-        status.classList.add("text-red-400");
-      }
-      btn.disabled = false;
-      btn.innerText = "Share Post";
-      setTimeout(function(){ status.classList.add("hidden"); status.classList.remove("text-green-400","text-red-400"); }, 3000);
-    }
-
-    async function likePost(postId, currentLikes) {
-      if (!supabaseClient) return;
-      try {
-        await supabaseClient.from("posts").update({ likes: currentLikes + 1 }).eq("id", postId);
-        loadCommunityFeed();
-      } catch (err) { console.error(err); }
-    }
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(function(){});
-    }
-  </script>
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
+</script>
 </body>
 </html>
