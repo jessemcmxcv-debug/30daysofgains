@@ -464,6 +464,7 @@ let activeProgram=localStorage.getItem("activeProgram")||"gain";
 let dayLog={}; try{dayLog=JSON.parse(localStorage.getItem("dayLog"))||{}}catch(e){}
 let progressPhotos=[]; try{progressPhotos=JSON.parse(localStorage.getItem("progressPhotos"))||[]}catch(e){}
 let unlockedAchievements=[]; try{unlockedAchievements=JSON.parse(localStorage.getItem("achievements"))||[]}catch(e){}
+let likedPosts=[]; try{likedPosts=JSON.parse(localStorage.getItem("likedPosts"))||[]}catch(e){}
 let onboardStep=0;
 let calYear, calMonth, dayCounts={}, viewingDate=null;
 let timerInterval=null, timerTotal=60, timerLeft=60;
@@ -1032,13 +1033,16 @@ async function loadCommunityFeed(){
     if(!data||!data.length){feed.innerHTML='<p class="text-center text-zinc-500 py-8 text-sm">No posts yet</p>';return}
     feed.innerHTML=data.map(post=>{
       const date=post.created_at?new Date(post.created_at).toLocaleDateString():"";
+      const alreadyLiked=likedPosts.indexOf(post.id)!==-1;
       return `<div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
         ${post.image_url?`<div class="w-full bg-zinc-900 flex items-center justify-center"><img src="${post.image_url}" alt="Post" class="w-full h-auto max-h-[28rem] object-contain"></div>`:""}
         <div class="p-4 space-y-2">
           <div class="flex justify-between"><span class="font-bold text-sm">${post.user_name||"Athlete"}</span><span class="text-xs text-zinc-500">${date}</span></div>
           ${post.caption?`<p class="text-sm text-zinc-300">${post.caption}</p>`:""}
           <div class="flex gap-4 items-center">
-            <button onclick="likePost('${post.id}',${post.likes||0})" class="flex items-center gap-1 text-sm text-zinc-400"><i data-lucide="heart" class="w-4 h-4"></i>${post.likes||0}</button>
+            <button onclick="likePost('${post.id}',${post.likes||0})" class="flex items-center gap-1 text-sm ${alreadyLiked?'text-accent':'text-zinc-400'}" ${alreadyLiked?'disabled':''}>
+              <i data-lucide="heart" class="w-4 h-4 ${alreadyLiked?'fill-current':''}"></i>${post.likes||0}
+            </button>
             <button onclick="toggleComments('${post.id}')" class="text-sm text-zinc-400">Comments</button>
           </div>
           <div id="comments-${post.id}" class="hidden space-y-2 pt-2 border-t border-zinc-800">
@@ -1124,7 +1128,14 @@ async function createPost(){
 }
 async function likePost(id,likes){
   if(!supabaseClient) return;
-  try{await supabaseClient.from("posts").update({likes:likes+1}).eq("id",id);loadCommunityFeed()}catch(e){console.error(e)}
+  if(likedPosts.indexOf(id)!==-1) return; // already liked once on this device
+  try{
+    await supabaseClient.from("posts").update({likes:(likes||0)+1}).eq("id",id);
+    likedPosts.push(id);
+    localStorage.setItem("likedPosts",JSON.stringify(likedPosts));
+    haptic(20);
+    loadCommunityFeed();
+  }catch(e){console.error(e)}
 }
 function toggleComments(postId){
   const el=document.getElementById("comments-"+postId);
