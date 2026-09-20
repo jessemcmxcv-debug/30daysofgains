@@ -218,10 +218,30 @@
         <p class="text-xs text-accent font-bold uppercase" id="workout-program-label">Weight Gain</p>
         <h2 class="text-xl font-black" id="workout-title">Today's Circuit</h2>
         <p class="text-xs text-zinc-400" id="workout-date"></p>
-        <div class="mt-4">
-          <div class="flex justify-between text-xs text-zinc-400 mb-1"><span>Progress</span><span id="circuit-percent">0%</span></div>
-          <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div id="circuit-bar" class="h-full bg-accent transition-all" style="width:0%"></div>
+        <div class="mt-4 space-y-3">
+          <div>
+            <div class="flex justify-between text-xs text-zinc-400 mb-1"><span>Today's circuit</span><span id="circuit-percent">0%</span></div>
+            <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div id="circuit-bar" class="h-full bg-accent transition-all" style="width:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-zinc-400 mb-1">
+              <span>Days logged this month</span>
+              <span id="month-days-label">0 / 30</span>
+            </div>
+            <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div id="month-days-bar" class="h-full bg-green-500 transition-all" style="width:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-zinc-400 mb-1">
+              <span>Achievements</span>
+              <span id="achievements-label">0 / 7</span>
+            </div>
+            <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div id="achievements-bar" class="h-full bg-amber-500 transition-all" style="width:0%"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -643,7 +663,31 @@ function openWorkoutForDate(dateStr, useSelected){
   document.getElementById("workout-date").innerText=formatDateNice(dateStr);
   document.getElementById("workout-lock-msg").innerText=
     (entry&&entry.completed&&entry.program===activeProgram)?"Completed — extra reps OK":"Progress auto-saves. Finish later anytime.";
-  renderCounters(); updateCircuitProgress(); switchScreen("today");
+  renderCounters(); updateCircuitProgress(); updateWorkoutMetaBars(); switchScreen("today");
+}
+function updateWorkoutMetaBars(){
+  const now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  const dim=new Date(y,m+1,0).getDate();
+  let monthDone=0;
+  for(let d=1;d<=dim;d++){
+    const k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    if(dayLog[k]&&dayLog[k].completed) monthDone++;
+  }
+  const monthPct=Math.round((monthDone/dim)*100);
+  const monthLabel=document.getElementById("month-days-label");
+  const monthBar=document.getElementById("month-days-bar");
+  if(monthLabel) monthLabel.innerText=monthDone+" / "+dim;
+  if(monthBar) monthBar.style.width=monthPct+"%";
+
+  // Achievements progress
+  checkAchievements();
+  const totalAch=ACHIEVEMENTS.length;
+  const unlocked=unlockedAchievements.length;
+  const achPct=Math.round((unlocked/totalAch)*100);
+  const achLabel=document.getElementById("achievements-label");
+  const achBar=document.getElementById("achievements-bar");
+  if(achLabel) achLabel.innerText=unlocked+" / "+totalAch;
+  if(achBar) achBar.style.width=achPct+"%";
 }
 function formatDateNice(ds){
   const [y,m,d]=ds.split("-").map(Number);
@@ -711,6 +755,7 @@ function completeWorkout(){
   localStorage.setItem("dayLog",JSON.stringify(dayLog));
   haptic([50,40,50,40,80]);
   document.getElementById("complete-btn").innerText="DONE ✓";
+  updateWorkoutMetaBars();
   setTimeout(()=>{switchScreen("home");updateHomeUI()},700);
 }
 function saveAndExit(){saveDayCounts();switchScreen("home");updateHomeUI()}
@@ -988,7 +1033,7 @@ async function loadCommunityFeed(){
     feed.innerHTML=data.map(post=>{
       const date=post.created_at?new Date(post.created_at).toLocaleDateString():"";
       return `<div class="bg-card rounded-xl border border-zinc-800 overflow-hidden">
-        ${post.image_url?`<img src="${post.image_url}" class="w-full max-h-80 object-cover">`:""}
+        ${post.image_url?`<div class="w-full bg-zinc-900 flex items-center justify-center"><img src="${post.image_url}" alt="Post" class="w-full h-auto max-h-[28rem] object-contain"></div>`:""}
         <div class="p-4 space-y-2">
           <div class="flex justify-between"><span class="font-bold text-sm">${post.user_name||"Athlete"}</span><span class="text-xs text-zinc-500">${date}</span></div>
           ${post.caption?`<p class="text-sm text-zinc-300">${post.caption}</p>`:""}
@@ -1009,6 +1054,35 @@ async function loadCommunityFeed(){
     safeIcons();
   }catch(err){console.error(err);feed.innerHTML='<p class="text-center text-red-400 py-8 text-sm">Could not load posts</p>'}
 }
+function resizeImageFile(file, maxWidth){
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        let w = img.width, h = img.height;
+        if(w > maxWidth){
+          h = Math.round(h * (maxWidth / w));
+          w = maxWidth;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function(blob){
+          if(!blob){ reject(new Error("Could not process image")); return; }
+          resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = function(){ reject(new Error("Invalid image")); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ reject(new Error("Could not read file")); };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function createPost(){
   if(!supabaseClient){alert("Community unavailable");return}
   const fileInput=document.getElementById("post-image");
@@ -1026,9 +1100,10 @@ async function createPost(){
   try{
     let imageUrl=null;
     if(hasImage){
-      const file=fileInput.files[0];
-      const name=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9.]/g,"_");
-      const {error:upErr}=await supabaseClient.storage.from("gains").upload(name,file);
+      // Resize so photos stay sharp but load fast — no crop
+      const resized = await resizeImageFile(fileInput.files[0], 1200);
+      const name = Date.now() + "_post.jpg";
+      const {error:upErr}=await supabaseClient.storage.from("gains").upload(name, resized);
       if(upErr) throw upErr;
       const {data:urlData}=supabaseClient.storage.from("gains").getPublicUrl(name);
       imageUrl=urlData.publicUrl;
