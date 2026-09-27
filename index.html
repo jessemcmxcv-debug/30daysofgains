@@ -160,17 +160,8 @@
         <div class="w-16 h-16 rounded-full border-4 border-accent flex items-center justify-center font-bold text-lg" id="home-progress-percent">0%</div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="selectProgram('gain')" id="btn-program-gain" class="p-4 rounded-2xl border-2 text-left">
-          <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
-          <h4 class="text-lg font-black">Weight Gain</h4>
-          <p class="text-xs text-zinc-400 mt-1">100·100·100</p>
-        </button>
-        <button onclick="selectProgram('loss')" id="btn-program-loss" class="p-4 rounded-2xl border-2 text-left">
-          <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
-          <h4 class="text-lg font-black">Weight Loss</h4>
-          <p class="text-xs text-zinc-400 mt-1">100 JJ · 50 · 50</p>
-        </button>
+      <div class="grid grid-cols-2 gap-3" id="home-program-buttons">
+        <!-- filled by rebuildHomeProgramButtons() -->
       </div>
 
       <div class="space-y-3">
@@ -406,8 +397,36 @@
         <button onclick="enableReminders()" class="w-full py-3 bg-accent text-black font-bold rounded-xl">Enable Daily Reminder</button>
         <p id="reminder-status" class="text-xs text-zinc-500 text-center"></p>
         <button onclick="resetData()" class="w-full py-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-xl text-sm font-bold">Reset All Progress</button>
+        <div class="border-t border-zinc-800 pt-4 space-y-3">
+          <h3 class="font-bold text-sm text-zinc-400">Admin</h3>
+          <div id="admin-login-box">
+            <input type="password" id="admin-password" placeholder="Admin password" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm mb-2">
+            <button onclick="adminLogin()" class="w-full py-3 bg-zinc-800 text-zinc-200 font-bold rounded-xl text-sm">Admin Login</button>
+            <p id="admin-login-status" class="text-xs text-center text-zinc-500 mt-2"></p>
+          </div>
+          <div id="admin-logged-box" class="hidden space-y-2">
+            <p class="text-xs text-green-400">Admin mode active</p>
+            <button onclick="switchScreen('admin')" class="w-full py-3 bg-accent text-black font-bold rounded-xl text-sm">Manage Workouts</button>
+            <button onclick="adminLogout()" class="w-full py-2 text-zinc-500 text-sm">Exit Admin</button>
+          </div>
+        </div>
         <button onclick="logout()" class="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">Sign Out</button>
       </div>
+    </section>
+
+    <!-- ADMIN WORKOUTS -->
+    <section id="screen-admin" class="hidden flex-1 p-4 max-w-md mx-auto w-full space-y-4">
+      <button onclick="switchScreen('settings')" class="text-xs text-zinc-400 flex items-center space-x-1 font-bold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i><span>BACK</span>
+      </button>
+      <div class="bg-card p-4 rounded-xl border border-zinc-800">
+        <h2 class="text-lg font-black">Manage Workouts</h2>
+        <p class="text-xs text-zinc-400 mt-1">Edit programs everyone uses. Changes save for all users when Supabase is set up.</p>
+      </div>
+      <div id="admin-programs" class="space-y-4"></div>
+      <button onclick="adminAddProgram()" class="w-full py-3 bg-zinc-800 text-zinc-200 font-bold rounded-xl text-sm">+ Add Program</button>
+      <button onclick="adminSavePrograms()" id="admin-save-btn" class="w-full py-4 bg-accent text-black font-extrabold rounded-xl">Save All Changes</button>
+      <p id="admin-save-status" class="text-xs text-center text-zinc-500"></p>
     </section>
 
     <!-- BOTTOM NAV -->
@@ -435,7 +454,10 @@ try {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch(e) {}
 
-const PROGRAMS = {
+// Change this password and share only with people who can edit workouts
+const ADMIN_PASSWORD = "gainsadmin";
+
+const DEFAULT_PROGRAMS = {
   gain: { id:"gain", name:"Weight Gain", exercises:[
     {key:"pushups",name:"Push-ups",icon:"💪",target:100},
     {key:"situps",name:"Sit-ups",icon:"🔥",target:100},
@@ -447,6 +469,8 @@ const PROGRAMS = {
     {key:"situps",name:"Sit-ups",icon:"🔥",target:50}
   ]}
 };
+let PROGRAMS = JSON.parse(JSON.stringify(DEFAULT_PROGRAMS));
+let isAdmin = sessionStorage.getItem("isAdmin") === "1";
 
 const ACHIEVEMENTS = [
   {id:"first", name:"First Day", desc:"Complete your first workout", check:s=>s.workouts>=1},
@@ -507,7 +531,10 @@ function hideSplash(){
   }
 }
 setTimeout(hideSplash,3000); setTimeout(hideSplash,5000); setTimeout(hideSplash,7000);
-window.addEventListener("load",()=>setTimeout(hideSplash,1000));
+window.addEventListener("load",function(){
+  loadProgramsFromRemote().then(function(){ rebuildHomeProgramButtons(); }).catch(function(){});
+  setTimeout(hideSplash,1000);
+});
 
 // ==================== ONBOARDING ====================
 const ONBOARD_STEPS=[
@@ -555,9 +582,10 @@ function logout(){
 
 // ==================== NAV ====================
 function switchScreen(screen){
-  ["home","today","calendar","weekly","achievements","photos","community","stats","about","settings"].forEach(s=>{
+  ["home","today","calendar","weekly","achievements","photos","community","stats","about","settings","admin"].forEach(s=>{
     const el=document.getElementById("screen-"+s); if(el) el.classList.add("hidden");
   });
+  if(screen==="admin" && !isAdmin){ switchScreen("settings"); return; }
   const t=document.getElementById("screen-"+screen);
   if(t){t.classList.remove("hidden");t.classList.add("fade-in")}
   // Bottom nav highlight
@@ -579,10 +607,184 @@ function switchScreen(screen){
   if(screen==="photos") renderProgressPhotos();
   if(screen==="stats") renderStats();
   if(screen==="community") loadCommunityFeed();
+  if(screen==="admin") renderAdminPrograms();
   if(screen==="settings"){
     const rt=localStorage.getItem("reminderTime"); if(rt) document.getElementById("reminder-time").value=rt;
+    updateAdminSettingsUI();
   }
   safeIcons();
+}
+
+// ==================== ADMIN ====================
+function updateAdminSettingsUI(){
+  const loginBox=document.getElementById("admin-login-box");
+  const loggedBox=document.getElementById("admin-logged-box");
+  if(!loginBox||!loggedBox) return;
+  if(isAdmin){ loginBox.classList.add("hidden"); loggedBox.classList.remove("hidden"); }
+  else { loginBox.classList.remove("hidden"); loggedBox.classList.add("hidden"); }
+}
+function adminLogin(){
+  const pw=(document.getElementById("admin-password").value||"").trim();
+  const status=document.getElementById("admin-login-status");
+  if(pw===ADMIN_PASSWORD){
+    isAdmin=true;
+    sessionStorage.setItem("isAdmin","1");
+    status.innerText="";
+    document.getElementById("admin-password").value="";
+    updateAdminSettingsUI();
+    haptic(40);
+  } else {
+    status.innerText="Wrong password";
+    status.className="text-xs text-center text-red-400 mt-2";
+  }
+}
+function adminLogout(){
+  isAdmin=false;
+  sessionStorage.removeItem("isAdmin");
+  updateAdminSettingsUI();
+  switchScreen("settings");
+}
+function renderAdminPrograms(){
+  const box=document.getElementById("admin-programs");
+  if(!box) return;
+  const ids=Object.keys(PROGRAMS);
+  box.innerHTML=ids.map(function(pid){
+    const p=PROGRAMS[pid];
+    const exHtml=(p.exercises||[]).map(function(ex,i){
+      return `<div class="bg-zinc-900 rounded-xl p-3 space-y-2 border border-zinc-800">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-zinc-500">Exercise ${i+1}</span>
+          <button onclick="adminRemoveExercise('${pid}',${i})" class="text-red-400 text-xs font-bold">Remove</button>
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+          <input value="${ex.icon||''}" onchange="adminUpdateEx('${pid}',${i},'icon',this.value)" class="col-span-1 bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-center text-sm" placeholder="💪">
+          <input value="${ex.name||''}" onchange="adminUpdateEx('${pid}',${i},'name',this.value)" class="col-span-3 bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-sm" placeholder="Name">
+        </div>
+        <div class="flex gap-2 items-center">
+          <label class="text-xs text-zinc-500">Target</label>
+          <input type="number" min="1" value="${ex.target||10}" onchange="adminUpdateEx('${pid}',${i},'target',this.value)" class="w-24 bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-sm">
+        </div>
+      </div>`;
+    }).join("");
+    return `<div class="bg-card p-4 rounded-xl border border-zinc-800 space-y-3">
+      <div class="flex justify-between items-start gap-2">
+        <input value="${p.name||''}" onchange="adminUpdateProgramName('${pid}',this.value)" class="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl p-3 font-bold text-sm">
+        ${ids.length>1?`<button onclick="adminDeleteProgram('${pid}')" class="text-red-400 text-xs font-bold px-2">Delete</button>`:""}
+      </div>
+      <p class="text-xs text-zinc-500">ID: ${pid}</p>
+      ${exHtml}
+      <button onclick="adminAddExercise('${pid}')" class="w-full py-2 bg-zinc-800 rounded-xl text-xs font-bold text-zinc-300">+ Add Exercise</button>
+    </div>`;
+  }).join("");
+}
+function adminUpdateProgramName(pid,name){
+  if(PROGRAMS[pid]) PROGRAMS[pid].name=name;
+}
+function adminUpdateEx(pid,i,field,val){
+  if(!PROGRAMS[pid]||!PROGRAMS[pid].exercises[i]) return;
+  if(field==="target") PROGRAMS[pid].exercises[i].target=Math.max(1,parseInt(val,10)||1);
+  else PROGRAMS[pid].exercises[i][field]=val;
+}
+function adminAddExercise(pid){
+  if(!PROGRAMS[pid]) return;
+  const key="ex_"+Date.now();
+  PROGRAMS[pid].exercises.push({key:key,name:"New Exercise",icon:"💪",target:50});
+  renderAdminPrograms();
+}
+function adminRemoveExercise(pid,i){
+  if(!PROGRAMS[pid]) return;
+  if(PROGRAMS[pid].exercises.length<=1){alert("Keep at least one exercise");return}
+  PROGRAMS[pid].exercises.splice(i,1);
+  renderAdminPrograms();
+}
+function adminAddProgram(){
+  const id="prog_"+Date.now();
+  PROGRAMS[id]={id:id,name:"New Program",exercises:[{key:"ex1",name:"Exercise 1",icon:"💪",target:50}]};
+  // Refresh home program buttons dynamically later
+  renderAdminPrograms();
+  rebuildHomeProgramButtons();
+}
+function adminDeleteProgram(pid){
+  if(Object.keys(PROGRAMS).length<=1){alert("Keep at least one program");return}
+  if(!confirm("Delete this program?")) return;
+  delete PROGRAMS[pid];
+  if(activeProgram===pid) activeProgram=Object.keys(PROGRAMS)[0];
+  renderAdminPrograms();
+  rebuildHomeProgramButtons();
+}
+async function adminSavePrograms(){
+  const status=document.getElementById("admin-save-status");
+  const btn=document.getElementById("admin-save-btn");
+  btn.disabled=true; btn.innerText="Saving...";
+  localStorage.setItem("customPrograms", JSON.stringify(PROGRAMS));
+  let remoteOk=false;
+  if(supabaseClient){
+    try{
+      // Upsert each program into workout_programs table
+      for(const pid of Object.keys(PROGRAMS)){
+        const p=PROGRAMS[pid];
+        const {error}=await supabaseClient.from("workout_programs").upsert({
+          id: p.id||pid,
+          name: p.name,
+          exercises: p.exercises,
+          updated_at: new Date().toISOString()
+        });
+        if(error) throw error;
+      }
+      remoteOk=true;
+    }catch(e){
+      console.warn("Remote save failed (table may not exist yet):", e);
+    }
+  }
+  btn.disabled=false; btn.innerText="Save All Changes";
+  status.innerText=remoteOk
+    ? "Saved for everyone ✓"
+    : "Saved on this device. Set up workout_programs table in Supabase to share with all users.";
+  status.className="text-xs text-center "+(remoteOk?"text-green-400":"text-amber-400");
+  rebuildHomeProgramButtons();
+  updateHomeUI();
+  haptic(50);
+}
+async function loadProgramsFromRemote(){
+  // Local custom first
+  try{
+    const local=JSON.parse(localStorage.getItem("customPrograms"));
+    if(local && typeof local==="object" && Object.keys(local).length){
+      PROGRAMS=local;
+    }
+  }catch(e){}
+  if(!supabaseClient) return;
+  try{
+    const {data,error}=await supabaseClient.from("workout_programs").select("*");
+    if(error||!data||!data.length) return;
+    const next={};
+    data.forEach(function(row){
+      next[row.id]={id:row.id, name:row.name, exercises:row.exercises||[]};
+    });
+    if(Object.keys(next).length){
+      PROGRAMS=next;
+      localStorage.setItem("customPrograms", JSON.stringify(PROGRAMS));
+    }
+  }catch(e){ console.warn("Could not load remote programs", e); }
+}
+function rebuildHomeProgramButtons(){
+  const box=document.getElementById("home-program-buttons");
+  if(!box) return;
+  const ids=Object.keys(PROGRAMS);
+  if(ids.length && ids.indexOf(activeProgram)===-1){
+    activeProgram=ids[0];
+    localStorage.setItem("activeProgram", activeProgram);
+  }
+  box.innerHTML=ids.map(function(pid){
+    const p=PROGRAMS[pid];
+    const targets=(p.exercises||[]).map(function(e){return e.target}).join(" · ");
+    const selected=pid===activeProgram;
+    return `<button onclick="selectProgram('${pid}')" class="p-4 rounded-2xl border-2 text-left ${selected?'border-accent bg-accent/10':'border-zinc-700 bg-card'}">
+      <p class="text-xs font-bold uppercase tracking-wider mb-1">Program</p>
+      <h4 class="text-lg font-black">${p.name||pid}</h4>
+      <p class="text-xs text-zinc-400 mt-1">${targets}</p>
+    </button>`;
+  }).join("");
 }
 
 // ==================== HOME / PROGRAM ====================
@@ -590,16 +792,9 @@ function selectProgram(id){
   activeProgram=id; localStorage.setItem("activeProgram",id); updateHomeUI(); haptic(20);
 }
 function updateHomeUI(){
-  const gainBtn=document.getElementById("btn-program-gain");
-  const lossBtn=document.getElementById("btn-program-loss");
-  if(activeProgram==="gain"){
-    gainBtn.className="p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left";
-    lossBtn.className="p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left";
-  } else {
-    lossBtn.className="p-4 rounded-2xl border-2 border-accent bg-accent/10 text-left";
-    gainBtn.className="p-4 rounded-2xl border-2 border-zinc-700 bg-card text-left";
-  }
+  rebuildHomeProgramButtons();
   const prog=PROGRAMS[activeProgram];
+  if(!prog) return;
   const today=todayStr();
   const te=dayLog[today];
   let summary=prog.name+" · "+prog.exercises.map(e=>e.target+" "+e.name.split(" ")[0]).join(" · ");
