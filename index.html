@@ -382,6 +382,10 @@
         <p class="text-zinc-500 pt-2">No future days. Counters can exceed targets. Progress auto-saves.</p>
       </div>
       <button onclick="exportData()" class="w-full py-3 bg-zinc-800 text-zinc-200 font-bold rounded-xl">Export Data (CSV)</button>
+      <div class="flex gap-3">
+        <a href="/privacy.html" class="flex-1 text-center py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">Privacy Policy</a>
+        <a href="/terms.html" class="flex-1 text-center py-3 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-bold">Terms of Service</a>
+      </div>
     </section>
 
     <!-- SETTINGS -->
@@ -526,6 +530,9 @@ function hideSplash(){
       document.getElementById("user-status").innerText=user.name||"Athlete";
       document.getElementById("app-shell").classList.remove("hidden");
       switchScreen("home");
+      if(user.provider==="google" && user.email){
+        loadProgressFromCloud().then(function(){ updateHomeUI(); checkAchievements(); });
+      }
     } else {
       document.getElementById("screen-auth").classList.remove("hidden");
       setTimeout(initGoogleSignIn, 200);
@@ -570,6 +577,81 @@ function finishOnboarding(){
   safeIcons();
 }
 
+// ==================== CLOUD PROGRESS SYNC ====================
+// Table: user_progress (user_id text PK, day_log jsonb, achievements jsonb, updated_at timestamptz)
+let progressSyncTimer = null;
+
+function canSyncProgress(){
+  return !!(supabaseClient && user && user.provider === "google" && user.email);
+}
+
+function mergeDayLogs(local, remote){
+  const out = Object.assign({}, local || {});
+  if(!remote || typeof remote !== "object") return out;
+  Object.keys(remote).forEach(function(date){
+    const r = remote[date];
+    const l = out[date];
+    if(!l){ out[date] = r; return; }
+    // Prefer completed; otherwise prefer higher total reps
+    if(r.completed && !l.completed){ out[date] = r; return; }
+    if(l.completed && !r.completed) return;
+    const sum = function(e){
+      if(!e || !e.counts) return 0;
+      return Object.keys(e.counts).reduce(function(a,k){ return a + (e.counts[k]||0); }, 0);
+    };
+    if(sum(r) >= sum(l)) out[date] = r;
+  });
+  return out;
+}
+
+async function loadProgressFromCloud(){
+  if(!canSyncProgress()) return;
+  try{
+    const { data, error } = await supabaseClient
+      .from("user_progress")
+      .select("day_log, achievements")
+      .eq("user_id", user.email)
+      .maybeSingle();
+    if(error) throw error;
+    if(!data) return;
+    if(data.day_log){
+      dayLog = mergeDayLogs(dayLog, data.day_log);
+      localStorage.setItem("dayLog", JSON.stringify(dayLog));
+    }
+    if(data.achievements && Array.isArray(data.achievements)){
+      const set = {};
+      unlockedAchievements.forEach(function(id){ set[id] = true; });
+      data.achievements.forEach(function(id){ set[id] = true; });
+      unlockedAchievements = Object.keys(set);
+      localStorage.setItem("achievements", JSON.stringify(unlockedAchievements));
+    }
+  }catch(e){
+    console.warn("Could not load cloud progress:", e);
+  }
+}
+
+async function saveProgressToCloud(){
+  if(!canSyncProgress()) return;
+  try{
+    const { error } = await supabaseClient.from("user_progress").upsert({
+      user_id: user.email,
+      day_log: dayLog,
+      achievements: unlockedAchievements,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" });
+    if(error) throw error;
+  }catch(e){
+    console.warn("Could not save cloud progress:", e);
+  }
+}
+
+function scheduleProgressSync(){
+  localStorage.setItem("dayLog", JSON.stringify(dayLog));
+  if(!canSyncProgress()) return;
+  clearTimeout(progressSyncTimer);
+  progressSyncTimer = setTimeout(function(){ saveProgressToCloud(); }, 800);
+}
+
 // ==================== AUTH ====================
 function login(provider, profile){
   if(provider==="google" && profile){
@@ -588,10 +670,13 @@ function login(provider, profile){
   document.getElementById("welcome-title").innerText="Welcome, "+user.name.split(" ")[0]+"!";
   document.getElementById("welcome-message").innerText=
     provider==="google"
-      ? "You're signed in with Google. Ready to crush your circuit?"
-      : "You're all set. Ready to build some serious gains?";
+      ? "You're signed in with Google. Your progress will sync across devices."
+      : "You're all set. Guest progress stays on this device only.";
   document.getElementById("welcome-overlay").classList.remove("hidden");
   safeIcons();
+  if(provider==="google"){
+    loadProgressFromCloud().then(function(){ checkAchievements(); });
+  }
 }
 function dismissWelcome(){
   document.getElementById("welcome-overlay").classList.add("hidden");
@@ -599,6 +684,8 @@ function dismissWelcome(){
   switchScreen("home");
 }
 function logout(){
+  // Push latest progress before signing out
+  if(canSyncProgress()) saveProgressToCloud();
   localStorage.removeItem("user"); user=null;
   document.getElementById("app-shell").classList.add("hidden");
   document.getElementById("screen-auth").classList.remove("hidden");
@@ -1001,7 +1088,7 @@ function saveDayCounts(){
   if(!dayLog[viewingDate]) dayLog[viewingDate]={program:activeProgram,counts:{},completed:false};
   dayLog[viewingDate].counts=Object.assign({},dayCounts);
   dayLog[viewingDate].program=activeProgram;
-  localStorage.setItem("dayLog",JSON.stringify(dayLog));
+  scheduleProgressSync();
 }
 function changeCount(key,delta){
   if(viewingDate>todayStr()) return;
@@ -1056,7 +1143,9 @@ function completeWorkout(){
   dayLog[viewingDate].counts=Object.assign({},dayCounts);
   dayLog[viewingDate].completed=true;
   dayLog[viewingDate].program=activeProgram;
-  localStorage.setItem("dayLog",JSON.stringify(dayLog));
+  scheduleProgressSync();
+  checkAchievements();
+  scheduleProgressSync();
   haptic([50,40,50,40,80]);
   document.getElementById("complete-btn").innerText="DONE ✓";
   updateWorkoutMetaBars();
